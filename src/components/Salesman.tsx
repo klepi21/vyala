@@ -22,9 +22,9 @@ const ICONS = {
 /**
  * The person a prospect actually speaks to.
  *
- * The portrait is a background image with the initials sitting underneath, so
- * if the file is ever missing the card still looks deliberate rather than
- * showing a broken image icon.
+ * The initials sit behind a real <img>. If the photo is ever missing the
+ * broken image collapses and the initials show through, so the card still
+ * looks deliberate rather than showing a broken file icon.
  */
 export function Salesman({ c, base }: { c: SalesmanCopy; base: string }) {
   return (
@@ -32,20 +32,25 @@ export function Salesman({ c, base }: { c: SalesmanCopy; base: string }) {
       <div className="mx-auto max-w-5xl px-4">
         <div className="reveal grid items-center gap-10 md:grid-cols-[300px_1fr]">
           <div className="relative mx-auto w-full max-w-[300px]">
-            {/* Soft plate behind the portrait */}
             <div className="drift-slow absolute -inset-3 rounded-[2rem] bg-brand-100/70" aria-hidden />
-            <div
-              className="relative aspect-[4/5] overflow-hidden rounded-[1.75rem] border border-black/[.06] bg-brand-600 shadow-xl shadow-brand-900/10"
-              role="img"
-              aria-label={`${c.name}, ${c.role}`}
-            >
-              <span className="absolute inset-0 flex items-center justify-center text-5xl font-semibold tracking-tight text-white/90">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-[1.75rem] border border-black/[.06] bg-brand-600 shadow-xl shadow-brand-900/10">
+              <span
+                className="absolute inset-0 flex items-center justify-center text-5xl font-semibold tracking-tight text-white/90"
+                aria-hidden
+              >
                 ΙΓ
               </span>
-              <span
-                className="absolute inset-0 bg-cover bg-top"
-                style={{ backgroundImage: "url('/team-ioannis.jpg')" }}
-                aria-hidden
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/team-ioannis.jpg"
+                alt={`${c.name}, ${c.role}`}
+                width={600}
+                height={750}
+                // Not lazy: jumping straight to #team can leave a lazy image
+                // unloaded, which drops the card back to the initials.
+                fetchPriority="low"
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-cover object-top"
               />
             </div>
           </div>
