@@ -32,14 +32,9 @@ export default async function AppointmentsPage({
 
   const dateStr = /^\d{4}-\d{2}-\d{2}$/.test(sp.date ?? "")
     ? sp.date!
-    : new Date().toISOString().slice(0, 10);
-  const dayStart = new Date(`${dateStr}T00:00:00`);
-  const dayEnd = new Date(`${dateStr}T23:59:59.999`);
-  const shift = (days: number) => {
-    const d = new Date(dayStart);
-    d.setDate(d.getDate() + days);
-    return d.toISOString().slice(0, 10);
-  };
+    : clinicToday();
+  const { from: dayStart, to: dayEnd } = clinicDayBounds(dateStr);
+  const shift = (days: number) => shiftYmd(dateStr, days);
 
   const [appts, patients, doctors] = await Promise.all([
     listAppointments(clinic.id, dayStart, dayEnd),

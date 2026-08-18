@@ -285,7 +285,7 @@ function bucketOf(ymd: string, grain: Grain): string {
 function recentBuckets(grain: Grain, count: number): string[] {
   const out: string[] = [];
   const today = clinicToday();
-  const [y, m, d] = today.split("-").map(Number);
+  const [y, m] = today.split("-").map(Number);
   for (let i = count - 1; i >= 0; i--) {
     let ymd: string;
     if (grain === "year") ymd = `${y - i}-${String(m).padStart(2, "0")}-01`;
