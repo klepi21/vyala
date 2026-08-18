@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { Readable } from "node:stream";
 import { bucket, db, ensureIndexes, isValidId, oid } from "./mongo";
 import { requireClinic, slugify } from "./tenancy";
+import { clinicToday, fromClinicLocal } from "./time";
 
 /** Throws unless the patient exists inside this clinic. Guards every patient-scoped write. */
 async function assertPatient(clinicId: string, patientId: string) {
@@ -29,7 +30,7 @@ async function resolveDoctor(clinicId: string, doctorId: string) {
 }
 
 const now = () => new Date().toISOString();
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => clinicToday();
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 const opt = (fd: FormData, k: string) => str(fd, k) || null;
 
@@ -205,7 +206,7 @@ export async function createAppointment(slug: string, formData: FormData) {
   const doctorId = await resolveDoctor(clinic.id, str(formData, "doctor_id"));
   const duration = parseInt(str(formData, "duration_min") || "30", 10) || 30;
 
-  const startsAt = new Date(`${date}T${time}:00`);
+  const startsAt = fromClinicLocal(date, time);
   if (Number.isNaN(startsAt.getTime())) throw new Error("That date and time are not valid");
 
   const d = await db();

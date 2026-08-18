@@ -11,6 +11,7 @@ import {
   Textarea,
 } from "@/components/ui";
 import { date, money } from "@/lib/format";
+import { clinicToday } from "@/lib/time";
 
 export default async function PatientPage({
   params,
@@ -161,7 +162,7 @@ export default async function PatientPage({
             <h3 className="mb-3 text-sm font-semibold">{t.visit_new}</h3>
             <form action={newVisit} className="space-y-3">
               <Field label={t.visit_date}>
-                <Input name="visit_date" type="date" defaultValue={new Date().toISOString().slice(0, 10)} />
+                <Input name="visit_date" type="date" defaultValue={clinicToday()} />
               </Field>
               <Field label={t.visit_symptoms}><Textarea name="symptoms" className="min-h-14" /></Field>
               <Field label={t.visit_diagnosis}><Textarea name="diagnosis" className="min-h-14" /></Field>

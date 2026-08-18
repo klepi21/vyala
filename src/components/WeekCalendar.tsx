@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Appointment } from "@/lib/types";
 import type { Locale } from "@/lib/i18n";
+import { CLINIC_TZ, clinicToday, clinicYmd, shiftYmd } from "@/lib/time";
 
 const statusDot: Record<string, string> = {
   scheduled: "bg-brand-500",
@@ -29,19 +30,21 @@ export function WeekCalendar({
   todayLabel: string;
 }) {
   const tag = locale === "el" ? "el-GR" : "en-GB";
-  const dayName = new Intl.DateTimeFormat(tag, { weekday: "short" });
-  const timeFmt = new Intl.DateTimeFormat(tag, { hour: "2-digit", minute: "2-digit" });
-
-  const todayKey = new Date().toDateString();
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() + i);
-    return d;
+  const dayName = new Intl.DateTimeFormat(tag, { weekday: "short", timeZone: CLINIC_TZ });
+  const dayNum = new Intl.DateTimeFormat(tag, { day: "numeric", timeZone: CLINIC_TZ });
+  const timeFmt = new Intl.DateTimeFormat(tag, {
+    hour: "2-digit", minute: "2-digit", timeZone: CLINIC_TZ,
   });
+
+  // Keyed on the clinic-local calendar date, so a UTC server cannot file an
+  // early morning appointment under the previous day.
+  const todayKey = clinicToday();
+  const startYmd = clinicYmd(weekStart);
+  const days = Array.from({ length: 7 }, (_, i) => shiftYmd(startYmd, i));
 
   const byDay = new Map<string, Appointment[]>();
   for (const a of appointments) {
-    const k = new Date(a.startsAt).toDateString();
+    const k = clinicYmd(a.startsAt);
     byDay.set(k, [...(byDay.get(k) ?? []), a]);
   }
 
@@ -50,16 +53,15 @@ export function WeekCalendar({
     // scrolls sideways instead of crushing each day to 40px.
     <div className="-mx-1 overflow-x-auto px-1 pb-1">
       <div className="grid min-w-[560px] grid-cols-7 gap-px overflow-hidden rounded-xl bg-black/[.06]">
-      {days.map((d) => {
-        const key = d.toDateString();
-        const list = (byDay.get(key) ?? []).filter((a) => a.status !== "cancelled");
-        const isToday = key === todayKey;
-        const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-        const weekend = d.getDay() === 0 || d.getDay() === 6;
+      {days.map((iso, index) => {
+        const list = (byDay.get(iso) ?? []).filter((a) => a.status !== "cancelled");
+        const isToday = iso === todayKey;
+        const noon = new Date(`${iso}T12:00:00Z`);
+        const weekend = index >= 5;
 
         return (
           <Link
-            key={key}
+            key={iso}
             href={`${basePath}?date=${iso}`}
             className={`group flex min-h-32 flex-col gap-1 p-2 transition ${
               weekend ? "bg-mist/70" : "bg-white"
@@ -67,14 +69,14 @@ export function WeekCalendar({
           >
             <div className="mb-0.5 flex items-baseline justify-between">
               <span className="text-[10px] font-medium uppercase tracking-wide text-muted">
-                {dayName.format(d)}
+                {dayName.format(noon)}
               </span>
               <span
                 className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold tabular-nums ${
                   isToday ? "bg-brand-600 text-white" : "text-ink/70"
                 }`}
               >
-                {d.getDate()}
+                {dayNum.format(noon)}
               </span>
             </div>
 

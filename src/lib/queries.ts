@@ -1,5 +1,8 @@
 import "server-only";
 import { cleanAll, db, isValidId, oid } from "./mongo";
+import {
+  clinicDayBounds, clinicMonthStart, clinicToday, clinicWeekStart, clinicYmd, shiftYmd,
+} from "./time";
 import type {
   Appointment, Doc, Expense, Invoice, Member, Patient, Payment, Visit,
 } from "./types";
@@ -190,21 +193,12 @@ export async function listMembers(clinicId: string): Promise<Member[]> {
   ) as unknown as Member[];
 }
 
-/** Monday of the week containing `d`, at midnight local time. */
-export function weekStartOf(d: Date): Date {
-  const start = new Date(d);
-  const dow = (start.getDay() + 6) % 7; // Monday = 0
-  start.setDate(start.getDate() - dow);
-  start.setHours(0, 0, 0, 0);
-  return start;
-}
-
 export async function dashboardStats(clinicId: string) {
   const d = await db();
   const nowDate = new Date();
-  const dayStart = new Date(nowDate); dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(nowDate); dayEnd.setHours(23, 59, 59, 999);
-  const monthStart = `${nowDate.getFullYear()}-${String(nowDate.getMonth() + 1).padStart(2, "0")}-01`;
+  const todayYmd = clinicToday();
+  const { from: dayStart, to: dayEnd } = clinicDayBounds(todayYmd);
+  const monthStart = clinicMonthStart(todayYmd);
 
   const [todayCount, patientCount, monthPayments, unpaidCount] = await Promise.all([
     d.collection("appointments").countDocuments({
@@ -225,9 +219,9 @@ export async function dashboardStats(clinicId: string) {
     ]).toArray(),
   ]);
 
-  const weekStart = weekStartOf(nowDate);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekEnd.getDate() + 7);
+  const weekStartYmd = clinicWeekStart(todayYmd);
+  const { from: weekStart } = clinicDayBounds(weekStartYmd);
+  const { to: weekEnd } = clinicDayBounds(shiftYmd(weekStartYmd, 6));
 
   const [week, todayList, payments] = await Promise.all([
     listAppointments(clinicId, weekStart, weekEnd),
@@ -241,9 +235,10 @@ export async function dashboardStats(clinicId: string) {
 
   // Last month's takings over the same slice of days, so the comparison is fair
   // on the 3rd of a month rather than flattering.
-  const prevMonthStart = new Date(nowDate.getFullYear(), nowDate.getMonth() - 1, 1);
-  const prevKey = `${prevMonthStart.getFullYear()}-${String(prevMonthStart.getMonth() + 1).padStart(2, "0")}`;
-  const dayOfMonth = nowDate.getDate();
+  const [ty, tm] = todayYmd.split("-").map(Number);
+  const prevMonth = new Date(Date.UTC(ty, tm - 2, 1));
+  const prevKey = `${prevMonth.getUTCFullYear()}-${String(prevMonth.getUTCMonth() + 1).padStart(2, "0")}`;
+  const dayOfMonth = Number(todayYmd.slice(8, 10));
   const prevSoFar = payments
     .filter((p) => p.paidAt.startsWith(prevKey) && Number(p.paidAt.slice(8, 10)) <= dayOfMonth)
     .reduce((s, p) => s + p.amount, 0);
@@ -283,21 +278,23 @@ export type Grain = "week" | "month" | "year";
 function bucketOf(ymd: string, grain: Grain): string {
   if (grain === "year") return ymd.slice(0, 4);
   if (grain === "month") return ymd.slice(0, 7);
-  const d = new Date(`${ymd}T00:00:00`);
-  const monday = weekStartOf(d);
-  return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, "0")}-${String(monday.getDate()).padStart(2, "0")}`;
+  return clinicWeekStart(ymd);
 }
 
 /** The last `count` bucket keys ending with the one containing today. */
 function recentBuckets(grain: Grain, count: number): string[] {
   const out: string[] = [];
-  const now = new Date();
+  const today = clinicToday();
+  const [y, m, d] = today.split("-").map(Number);
   for (let i = count - 1; i >= 0; i--) {
-    const d = new Date(now);
-    if (grain === "year") d.setFullYear(d.getFullYear() - i);
-    else if (grain === "month") d.setMonth(d.getMonth() - i);
-    else d.setDate(d.getDate() - i * 7);
-    const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    let ymd: string;
+    if (grain === "year") ymd = `${y - i}-${String(m).padStart(2, "0")}-01`;
+    else if (grain === "month") {
+      const t = new Date(Date.UTC(y, m - 1 - i, 1));
+      ymd = `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, "0")}-01`;
+    } else {
+      ymd = shiftYmd(today, -i * 7);
+    }
     out.push(bucketOf(ymd, grain));
   }
   return [...new Set(out)];
@@ -342,12 +339,12 @@ export async function analytics(clinicId: string, grain: Grain, periods: number)
     if (k in spend) spend[k] += Number(e.amount);
   }
   for (const p of patients) {
-    const k = bucketOf(String(p.createdAt).slice(0, 10), grain);
+    const k = bucketOf(clinicYmd(String(p.createdAt)), grain);
     if (k in newPat) newPat[k] += 1;
   }
   for (const a of appts) {
     if (a.status === "cancelled") continue;
-    const k = bucketOf(String(a.startsAt).slice(0, 10), grain);
+    const k = bucketOf(clinicYmd(String(a.startsAt)), grain);
     if (k in appt) appt[k] += 1;
   }
 
@@ -389,8 +386,7 @@ export async function analytics(clinicId: string, grain: Grain, periods: number)
 export async function billingTotals(clinicId: string) {
   const d = await db();
   const cid = oid(clinicId);
-  const nowDate = new Date();
-  const monthStart = `${nowDate.getFullYear()}-${String(nowDate.getMonth() + 1).padStart(2, "0")}-01`;
+  const monthStart = clinicMonthStart();
   const [inMonth, outMonth, unpaid] = await Promise.all([
     d.collection("payments").aggregate([
       { $match: { clinicId: cid, paidAt: { $gte: monthStart } } },

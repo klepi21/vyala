@@ -8,6 +8,7 @@ import {
   Select, Tabs, Textarea,
 } from "@/components/ui";
 import { date, money } from "@/lib/format";
+import { clinicToday } from "@/lib/time";
 import type { Dict } from "@/lib/i18n";
 import type { Expense, Invoice, Payment } from "@/lib/types";
 import type { Locale } from "@/lib/i18n";
@@ -163,7 +164,7 @@ export function BillingView({
                 />
               </Field>
               <Field label={t.pay_date}>
-                <Input name="paid_at" type="date" defaultValue={new Date().toISOString().slice(0, 10)} />
+                <Input name="paid_at" type="date" defaultValue={clinicToday()} />
               </Field>
               <Field label={t.pay_note} optional={`(${t.optional})`}>
                 <Textarea name="note" className="min-h-16" placeholder={t.pay_note_placeholder} />
@@ -238,7 +239,7 @@ export function BillingView({
                 />
               </Field>
               <Field label={t.inv_issued_at}>
-                <Input name="issued_at" type="date" defaultValue={new Date().toISOString().slice(0, 10)} />
+                <Input name="issued_at" type="date" defaultValue={clinicToday()} />
               </Field>
               <Field label={t.inv_note} hint={t.inv_note_hint}>
                 <Textarea name="note" className="min-h-16" placeholder={t.inv_default_line} />
@@ -299,7 +300,7 @@ export function BillingView({
                 <Input name="supplier" placeholder={t.exp_supplier_placeholder} />
               </Field>
               <Field label={t.exp_date}>
-                <Input name="spent_at" type="date" defaultValue={new Date().toISOString().slice(0, 10)} />
+                <Input name="spent_at" type="date" defaultValue={clinicToday()} />
               </Field>
               <Field label={t.pay_note} optional={`(${t.optional})`}>
                 <Textarea name="note" className="min-h-16" />

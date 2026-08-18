@@ -10,6 +10,7 @@ import {
 import { PatientPicker } from "@/components/PatientPicker";
 import { SubmitBar } from "@/components/SubmitBar";
 import { time, weekday } from "@/lib/format";
+import { clinicDayBounds, clinicToday, shiftYmd } from "@/lib/time";
 
 const statusTone: Record<string, string> = {
   scheduled: "blue",

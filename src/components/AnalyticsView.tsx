@@ -5,6 +5,7 @@ import { ChartFrame, GroupedBars, RankedBars, SERIES, TrendLine } from "@/compon
 import { money } from "@/lib/format";
 import type { Dict, Locale } from "@/lib/i18n";
 import type { Grain } from "@/lib/queries";
+import { CLINIC_TZ } from "@/lib/time";
 
 type Analytics = Awaited<ReturnType<typeof import("@/lib/queries").analytics>>;
 
@@ -14,10 +15,13 @@ function axisLabel(key: string, grain: Grain, locale: Locale): string {
   if (grain === "year") return key;
   if (grain === "month") {
     const [y, m] = key.split("-");
-    return new Intl.DateTimeFormat(tag, { month: "short" }).format(new Date(Number(y), Number(m) - 1, 1));
+    return new Intl.DateTimeFormat(tag, { month: "short", timeZone: CLINIC_TZ }).format(
+      new Date(Date.UTC(Number(y), Number(m) - 1, 1, 12))
+    );
   }
-  const d = new Date(`${key}T00:00:00`);
-  return new Intl.DateTimeFormat(tag, { day: "numeric", month: "short" }).format(d);
+  return new Intl.DateTimeFormat(tag, {
+    day: "numeric", month: "short", timeZone: CLINIC_TZ,
+  }).format(new Date(`${key}T12:00:00Z`));
 }
 
 export function AnalyticsView({

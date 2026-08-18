@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db, isValidId, oid } from "./mongo";
 import { demoClinicId } from "./demo";
+import { clinicToday, fromClinicLocal } from "./time";
 
 /**
  * Writes for the public showroom.
@@ -16,7 +17,7 @@ import { demoClinicId } from "./demo";
  */
 
 const now = () => new Date().toISOString();
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => clinicToday();
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 const opt = (fd: FormData, k: string) => str(fd, k) || null;
 
@@ -64,7 +65,7 @@ export async function demoCreateAppointment(formData: FormData) {
   if (!patientId || !date || !time) throw new Error("Patient, date and time are required");
 
   const { d, clinicId } = await scoped(patientId);
-  const startsAt = new Date(`${date}T${time}:00`);
+  const startsAt = fromClinicLocal(date, time);
   if (Number.isNaN(startsAt.getTime())) throw new Error("That date and time are not valid");
 
   const rawDoctor = str(formData, "doctor_id");
