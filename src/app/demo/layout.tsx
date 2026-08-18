@@ -1,14 +1,49 @@
 import Link from "next/link";
 import {
-  BarChart3, CalendarDays, LayoutDashboard, Settings, Users, Wallet,
+  BarChart3, CalendarDays, DatabaseZap, LayoutDashboard, Settings, Users, Wallet,
 } from "lucide-react";
-import { LogoMark } from "@/components/Logo";
+import { Logo, LogoMark } from "@/components/Logo";
 import { DemoResetButton } from "@/components/DemoResetButton";
-import { demoContext } from "@/lib/demo";
+import { demoClinic } from "@/lib/demo";
+import { getDict } from "@/lib/i18n";
+import { getLocale } from "@/lib/tenancy";
 import type { ReactNode } from "react";
 
 export default async function DemoLayout({ children }: { children: ReactNode }) {
-  const { clinic, t } = await demoContext();
+  const locale = await getLocale();
+  const t = getDict(locale);
+  const clinic = await demoClinic();
+
+  // The database is unset or unreachable. Say so plainly rather than letting
+  // the page throw, since the showroom is the first thing a prospect clicks.
+  if (!clinic) {
+    return (
+      <main className="flex flex-1 items-center justify-center px-4 py-16">
+        <div className="w-full max-w-md rounded-2xl border border-black/[.07] bg-white p-6 text-center shadow-sm">
+          <div className="mb-4 flex justify-center">
+            <Logo size={30} />
+          </div>
+          <DatabaseZap size={26} className="mx-auto mb-4 text-amber-500" />
+          <h1 className="text-lg font-semibold">{t.demo_unavailable_title}</h1>
+          <p className="mt-2 text-sm leading-relaxed text-ink/65">{t.demo_unavailable_body}</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
+            <Link
+              href="/"
+              className="rounded-xl border border-black/12 px-5 py-2.5 text-sm font-medium transition hover:bg-mist"
+            >
+              {t.back_home}
+            </Link>
+            <Link
+              href="/contact"
+              className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700"
+            >
+              {t.demo_cta}
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const nav = [
     { href: "/demo", label: t.nav_dashboard, icon: LayoutDashboard },
