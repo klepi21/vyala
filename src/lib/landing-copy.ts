@@ -1,0 +1,271 @@
+import type { LandingCopy } from "@/components/Landing";
+
+export const landingEn: LandingCopy = {
+  locale: "en",
+  nav_features: "Features",
+  nav_demo: "Demo",
+  nav_contact: "Who you talk to",
+  nav_faq: "FAQ",
+  nav_signin: "Sign in",
+  nav_cta: "Book a demo",
+  hero_eyebrow: "Built for clinics in Greece and Cyprus",
+  hero_title_1: "Your clinic,",
+  hero_title_2: "finally under control.",
+  hero_sub:
+    "Patients, appointments, visit notes, payments and invoices in one calm place. Nothing to install, nothing to learn, no IT person needed. Most doctors are working in it the same afternoon.",
+  hero_cta: "Book a 15 minute demo",
+  hero_cta_sub: "No card, no commitment, no sales script",
+  hero_secondary: "Watch the 20 second tour",
+  proof_1: "Greek and English",
+  proof_2: "A private address for every practice",
+  proof_3: "As many patients as you like",
+  stats: [
+    { value: "5 min", label: "to add your first patient and book them in" },
+    { value: "2", label: "languages, switched with one click" },
+    { value: "0", label: "software to install or maintain" },
+    { value: "EU", label: "encrypted hosting, one practice never sees another" },
+  ],
+  video_title: "See the whole thing in 20 seconds",
+  video_sub:
+    "This is the actual product, recorded start to finish. No slides, no mockups.",
+  video_caption: "Adding a patient, booking a visit and recording a payment.",
+  video_try: "Or click around the sample practice yourself",
+  back_home: "Back to home",
+  features_title: "Everything you need. Nothing you don't.",
+  features_sub:
+    "Made for small practices that want their day to run smoothly, not for hospital IT departments.",
+  f1_title: "Patient records",
+  f1_body:
+    "One page per patient with AMKA, history, allergies and your own notes. Search by name, AMKA or phone and you are there in a second.",
+  f2_title: "A calm daily schedule",
+  f2_body:
+    "See the whole day at a glance. Booking takes about ten seconds, and marking someone as seen or cancelled is a single click.",
+  f3_title: "Visit notes that stay put",
+  f3_body:
+    "Symptoms, diagnosis and treatment recorded per visit, so the full story is there next time. Print or export a patient's history whenever you need it.",
+  f4_title: "Payments the way you take them",
+  f4_body:
+    "Cash, card on your own terminal, or a bank transfer. You write down what you actually collected, and the monthly total adds itself up.",
+  f5_title: "Test results and documents",
+  f5_body:
+    "Drop lab results, referrals and scans straight onto the patient's file. They stay private and they are always where you left them.",
+  f6_title: "Your team, your rules",
+  f6_body:
+    "Add doctors and assistants with nothing more than an email address. Each practice gets its own address and its own permissions.",
+  how_title: "Three steps and you are running",
+  how_1_title: "Have a quick chat",
+  how_1_body: "Fifteen minutes on a call so we understand how your practice actually works.",
+  how_2_title: "We set your practice up",
+  how_2_body: "You get your own address, your team added, and your existing patients imported.",
+  how_3_title: "Start your day in it",
+  how_3_body: "Open it tomorrow morning and the schedule is already waiting for you.",
+  salesman: {
+    eyebrow: "Talk to a person",
+    title: "You will be speaking with Ioannis.",
+    body:
+      "No call centre and no chatbot. Ioannis handles every practice that comes to Vyala, from the first conversation through to the day your patients are imported and your team is set up. He trained as a lawyer and runs a family restaurant, so he understands both the paperwork side of a regulated business and what it is like to keep one running while the phone rings.",
+    name: "Ioannis Gioltsidis",
+    role: "Practice partnerships, Greece and Cyprus",
+    credentials: [
+      { icon: "scale", text: "Lawyer" },
+      { icon: "fork", text: "Manager at geusicleous62_restaurant" },
+      { icon: "pin", text: "Born in Greece, living in Cyprus" },
+      { icon: "cap", text: "LLB, MBA, European University Cyprus" },
+    ],
+    cta: "Book a call with Ioannis",
+    note: "Fifteen minutes, no obligation.",
+  },
+  contact_title: "Let's find out if it fits",
+  contact_sub:
+    "Tell us a little about your practice and we will show you exactly how it would work for you. A real conversation with someone who knows the product, not a demo reel.",
+  contact_name: "Your name",
+  contact_email: "Email",
+  contact_phone: "Phone",
+  contact_clinic: "Practice name",
+  contact_size: "How many doctors?",
+  contact_size_options: ["Just me", "2 to 5", "6 to 15", "More than 15"],
+  contact_message: "Anything you'd like us to know",
+  contact_submit: "Request a demo",
+  contact_note: "We usually reply the same working day.",
+  contact_sent_title: "Thanks, that's with us",
+  contact_sent_body:
+    "One of us will get back to you shortly, usually within a few hours on a working day.",
+  faq_title: "Questions people ask us",
+  faqs: [
+    {
+      q: "Do I need to be good with computers?",
+      a: "If you can send an email you can use this. There is nothing to install and nothing to maintain. It opens in the browser on your computer, your tablet and your phone.",
+    },
+    {
+      q: "How do patient payments work?",
+      a: "Exactly as they do now. Cash in the drawer, card on your own terminal, or a bank transfer. Vyala just records what you took so you can see where you stand at the end of the month. It never sits between you and your money.",
+    },
+    {
+      q: "Can several doctors share one practice?",
+      a: "Yes. An admin adds each doctor or assistant by email, and they sign in with their own account. Everyone sees the same patients and schedule, with permissions that match their role.",
+    },
+    {
+      q: "Where does my patient data live?",
+      a: "On encrypted infrastructure inside the EU, kept strictly separate per practice. Only the people you have added to your practice can reach it. You can export any patient's record at any time.",
+    },
+    {
+      q: "What happens if I want to stop?",
+      a: "You stop. There is no lock-in and no cancellation fee, and you can take your patient histories with you as PDFs before you go.",
+    },
+    {
+      q: "Can you move my existing records across?",
+      a: "Usually yes. Bring us a spreadsheet, an export from your current system, or even a list, and we will do the import with you during setup.",
+    },
+  ],
+  final_title: "Put the paperwork down.",
+  final_sub:
+    "Every evening spent catching up with notebooks and spreadsheets is an evening you do not get back. Let us show you what the alternative looks like.",
+  final_cta: "Book your demo",
+  footer_tagline: "Quiet, simple practice management for Greece and Cyprus.",
+  footer_legal: "Legal",
+  footer_privacy: "Privacy policy",
+  footer_terms: "Terms of service",
+  footer_gdpr: "GDPR and data protection",
+  footer_contact: "Contact",
+  mock_today: "Today",
+  mock_patients: "Patients",
+  mock_revenue: "This month",
+  mock_next: "Next up",
+  lang_switch_label: "ΕΛ",
+  lang_switch_href: "/el",
+};
+
+export const landingEl: LandingCopy = {
+  locale: "el",
+  nav_features: "Δυνατότητες",
+  nav_demo: "Επίδειξη",
+  nav_contact: "Ποιον θα βρείτε",
+  nav_faq: "Απορίες",
+  nav_signin: "Σύνδεση",
+  nav_cta: "Κλείστε επίδειξη",
+  hero_eyebrow: "Φτιαγμένο για ιατρεία σε Ελλάδα και Κύπρο",
+  hero_title_1: "Το ιατρείο σας,",
+  hero_title_2: "επιτέλους σε τάξη.",
+  hero_sub:
+    "Ασθενείς, ραντεβού, σημειώσεις επίσκεψης, πληρωμές και αποδείξεις σε ένα ήρεμο μέρος. Τίποτα να εγκαταστήσετε, τίποτα να μάθετε, κανένας τεχνικός. Οι περισσότεροι ιατροί δουλεύουν μέσα του το ίδιο απόγευμα.",
+  hero_cta: "Κλείστε επίδειξη 15 λεπτών",
+  hero_cta_sub: "Χωρίς κάρτα, χωρίς δέσμευση, χωρίς πιεστικές πωλήσεις",
+  hero_secondary: "Δείτε το σε 20 δευτερόλεπτα",
+  proof_1: "Ελληνικά και αγγλικά",
+  proof_2: "Ξεχωριστή διεύθυνση για κάθε ιατρείο",
+  proof_3: "Όσους ασθενείς θέλετε",
+  stats: [
+    { value: "5 λεπτά", label: "για τον πρώτο ασθενή και το πρώτο ραντεβού" },
+    { value: "2", label: "γλώσσες, με ένα κλικ" },
+    { value: "0", label: "προγράμματα να εγκαταστήσετε ή να συντηρείτε" },
+    { value: "ΕΕ", label: "κρυπτογραφημένη φιλοξενία, πλήρης διαχωρισμός ιατρείων" },
+  ],
+  video_title: "Όλο το εργαλείο σε 20 δευτερόλεπτα",
+  video_sub:
+    "Είναι το πραγματικό προϊόν, τραβηγμένο από την αρχή ως το τέλος. Χωρίς διαφάνειες, χωρίς μακέτες.",
+  video_caption: "Καταχώρηση ασθενή, κλείσιμο ραντεβού και εγγραφή πληρωμής.",
+  video_try: "Ή περιηγηθείτε μόνοι σας στο δείγμα ιατρείου",
+  back_home: "Πίσω στην αρχική",
+  features_title: "Ό,τι χρειάζεστε. Τίποτα παραπάνω.",
+  features_sub:
+    "Για μικρά ιατρεία που θέλουν να κυλάει ήσυχα η μέρα τους, όχι για τμήματα πληροφορικής νοσοκομείων.",
+  f1_title: "Καρτέλα ασθενή",
+  f1_body:
+    "Μία σελίδα ανά ασθενή με ΑΜΚΑ, ιστορικό, αλλεργίες και τις δικές σας σημειώσεις. Αναζήτηση με όνομα, ΑΜΚΑ ή τηλέφωνο και είστε εκεί σε ένα δευτερόλεπτο.",
+  f2_title: "Ήρεμο ημερήσιο πρόγραμμα",
+  f2_body:
+    "Βλέπετε όλη τη μέρα με μια ματιά. Το κλείσιμο ραντεβού θέλει δέκα δευτερόλεπτα και η σήμανση ολοκλήρωσης ή ακύρωσης είναι ένα κλικ.",
+  f3_title: "Σημειώσεις που μένουν στη θέση τους",
+  f3_body:
+    "Συμπτώματα, διάγνωση και αγωγή ανά επίσκεψη, ώστε την επόμενη φορά να έχετε όλη την εικόνα. Εκτυπώνετε ή εξάγετε το ιστορικό όποτε το χρειαστείτε.",
+  f4_title: "Πληρωμές όπως τις εισπράττετε",
+  f4_body:
+    "Μετρητά, κάρτα στο δικό σας POS ή τραπεζική μεταφορά. Γράφετε τι πραγματικά εισπράξατε και το σύνολο του μήνα βγαίνει μόνο του.",
+  f5_title: "Εξετάσεις και έγγραφα",
+  f5_body:
+    "Ανεβάζετε αποτελέσματα, παραπεμπτικά και απεικονίσεις κατευθείαν στην καρτέλα. Μένουν ιδιωτικά και είναι πάντα εκεί που τα αφήσατε.",
+  f6_title: "Η ομάδα σας, οι κανόνες σας",
+  f6_body:
+    "Προσθέτετε ιατρούς και βοηθούς με ένα απλό email. Κάθε ιατρείο έχει τη δική του διεύθυνση και τα δικά του δικαιώματα.",
+  how_title: "Τρία βήματα και δουλεύετε",
+  how_1_title: "Μια σύντομη κουβέντα",
+  how_1_body: "Δεκαπέντε λεπτά για να καταλάβουμε πώς λειτουργεί πραγματικά το ιατρείο σας.",
+  how_2_title: "Το στήνουμε εμείς",
+  how_2_body: "Παίρνετε τη διεύθυνσή σας, την ομάδα σας περασμένη και τους ασθενείς σας εισαγμένους.",
+  how_3_title: "Ξεκινάτε τη μέρα μέσα του",
+  how_3_body: "Το ανοίγετε αύριο το πρωί και το πρόγραμμα σας περιμένει ήδη.",
+  salesman: {
+    eyebrow: "Μιλήστε με άνθρωπο",
+    title: "Θα μιλήσετε με τον Ιωάννη.",
+    body:
+      "Χωρίς τηλεφωνικό κέντρο και χωρίς chatbot. Ο Ιωάννης αναλαμβάνει κάθε ιατρείο που έρχεται στο Vyala, από την πρώτη κουβέντα μέχρι τη μέρα που θα έχουν περαστεί οι ασθενείς σας και θα είναι έτοιμη η ομάδα σας. Έχει σπουδάσει νομικά και διευθύνει οικογενειακό εστιατόριο, οπότε καταλαβαίνει και τη γραφειοκρατία μιας ρυθμιζόμενης δουλειάς και το πώς είναι να την κρατάς όρθια ενώ χτυπάει το τηλέφωνο.",
+    name: "Ιωάννης Γιολτσίδης",
+    role: "Συνεργασίες ιατρείων, Ελλάδα και Κύπρος",
+    credentials: [
+      { icon: "scale", text: "Δικηγόρος" },
+      { icon: "fork", text: "Manager στο geusicleous62_restaurant" },
+      { icon: "pin", text: "Γεννημένος στην Ελλάδα, ζει στην Κύπρο" },
+      { icon: "cap", text: "LLB, MBA, European University Cyprus" },
+    ],
+    cta: "Κλείστε κλήση με τον Ιωάννη",
+    note: "Δεκαπέντε λεπτά, χωρίς καμία δέσμευση.",
+  },
+  contact_title: "Ας δούμε αν σας ταιριάζει",
+  contact_sub:
+    "Πείτε μας δυο λόγια για το ιατρείο σας και θα σας δείξουμε ακριβώς πώς θα δούλευε για εσάς. Μια κανονική κουβέντα με κάποιον που ξέρει το προϊόν, όχι βιντεάκι επίδειξης.",
+  contact_name: "Το όνομά σας",
+  contact_email: "Email",
+  contact_phone: "Τηλέφωνο",
+  contact_clinic: "Όνομα ιατρείου",
+  contact_size: "Πόσοι ιατροί;",
+  contact_size_options: ["Μόνο εγώ", "2 έως 5", "6 έως 15", "Πάνω από 15"],
+  contact_message: "Οτιδήποτε θέλετε να ξέρουμε",
+  contact_submit: "Ζητήστε επίδειξη",
+  contact_note: "Απαντάμε συνήθως την ίδια εργάσιμη μέρα.",
+  contact_sent_title: "Ευχαριστούμε, το λάβαμε",
+  contact_sent_body:
+    "Θα επικοινωνήσουμε μαζί σας σύντομα, συνήθως μέσα σε λίγες ώρες τις εργάσιμες μέρες.",
+  faq_title: "Ό,τι μας ρωτούν συχνά",
+  faqs: [
+    {
+      q: "Χρειάζεται να τα πηγαίνω καλά με τους υπολογιστές;",
+      a: "Αν στέλνετε email, μπορείτε να το χρησιμοποιήσετε. Δεν εγκαθιστάτε τίποτα και δεν συντηρείτε τίποτα. Ανοίγει από τον browser σε υπολογιστή, tablet και κινητό.",
+    },
+    {
+      q: "Πώς γίνονται οι πληρωμές των ασθενών;",
+      a: "Ακριβώς όπως τώρα. Μετρητά στο συρτάρι, κάρτα στο δικό σας POS ή τραπεζική μεταφορά. Το Vyala απλώς καταγράφει τι εισπράξατε για να ξέρετε πού βρίσκεστε στο τέλος του μήνα. Δεν μπαίνει ποτέ ανάμεσα σε εσάς και τα χρήματά σας.",
+    },
+    {
+      q: "Μπορούν πολλοί ιατροί να μοιράζονται ένα ιατρείο;",
+      a: "Ναι. Ο διαχειριστής προσθέτει κάθε ιατρό ή βοηθό με το email του και συνδέεται με δικό του λογαριασμό. Βλέπουν όλοι τους ίδιους ασθενείς και το ίδιο πρόγραμμα, με δικαιώματα ανάλογα με τον ρόλο τους.",
+    },
+    {
+      q: "Πού βρίσκονται τα δεδομένα των ασθενών μου;",
+      a: "Σε κρυπτογραφημένη υποδομή εντός ΕΕ, αυστηρά χωρισμένα ανά ιατρείο. Μόνο όσοι έχετε προσθέσει στο ιατρείο σας έχουν πρόσβαση. Μπορείτε να εξαγάγετε οποιαδήποτε καρτέλα όποτε θέλετε.",
+    },
+    {
+      q: "Τι γίνεται αν θελήσω να σταματήσω;",
+      a: "Σταματάτε. Δεν υπάρχει δέσμευση ούτε χρέωση ακύρωσης, και παίρνετε μαζί σας τα ιστορικά των ασθενών σε PDF πριν φύγετε.",
+    },
+    {
+      q: "Μπορείτε να μεταφέρετε τα υπάρχοντα αρχεία μου;",
+      a: "Συνήθως ναι. Φέρτε μας ένα αρχείο Excel, μια εξαγωγή από το τωρινό σας σύστημα ή ακόμα και μια λίστα, και κάνουμε την εισαγωγή μαζί κατά το στήσιμο.",
+    },
+  ],
+  final_title: "Αφήστε κάτω τα χαρτιά.",
+  final_sub:
+    "Κάθε βράδυ που το περνάτε με τετράδια και λογιστικά φύλλα είναι ένα βράδυ που δεν παίρνετε πίσω. Αφήστε μας να σας δείξουμε την εναλλακτική.",
+  final_cta: "Κλείστε την επίδειξή σας",
+  footer_tagline: "Ήσυχη, απλή διαχείριση ιατρείου για Ελλάδα και Κύπρο.",
+  footer_legal: "Νομικά",
+  footer_privacy: "Πολιτική απορρήτου",
+  footer_terms: "Όροι χρήσης",
+  footer_gdpr: "GDPR και προστασία δεδομένων",
+  footer_contact: "Επικοινωνία",
+  mock_today: "Σήμερα",
+  mock_patients: "Ασθενείς",
+  mock_revenue: "Αυτόν τον μήνα",
+  mock_next: "Επόμενο",
+  lang_switch_label: "EN",
+  lang_switch_href: "/",
+};
