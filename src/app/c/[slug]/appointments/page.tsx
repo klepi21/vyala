@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Pencil, X } from "lucide-react";
 import { requireClinic } from "@/lib/tenancy";
 import { doctorOptions, listAppointments, patientOptions } from "@/lib/queries";
 import { createAppointment, quickAddPatient, setAppointmentStatus } from "@/lib/actions";
@@ -8,7 +8,7 @@ import {
   Select,
 } from "@/components/ui";
 import { PatientPicker } from "@/components/PatientPicker";
-import { SubmitBar } from "@/components/SubmitBar";
+import { ActionForm } from "@/components/ActionForm";
 import { time, weekday } from "@/lib/format";
 import { clinicDayBounds, clinicToday, shiftYmd } from "@/lib/time";
 
@@ -96,6 +96,16 @@ export default async function AppointmentsPage({
                       </p>
                     </div>
                     <Badge tone={statusTone[a.status]}>{statusLabel[a.status]}</Badge>
+                    <div className="flex gap-1">
+                      <Link
+                        href={`/c/${slug}/appointments/${a.id}`}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted transition hover:bg-mist hover:text-ink"
+                        title={t.appt_edit}
+                        aria-label={t.appt_edit}
+                      >
+                        <Pencil size={16} />
+                      </Link>
+                    </div>
                     {a.status === "scheduled" && (
                       <div className="flex gap-1">
                         <form action={complete}>
@@ -125,7 +135,7 @@ export default async function AppointmentsPage({
 
         <Card className="h-fit p-5">
           <h3 className="mb-3 text-sm font-semibold">{t.appt_new}</h3>
-          <form action={create} className="space-y-3">
+          <ActionForm action={create} submitLabel={t.appt_save} savingLabel={t.saving} className="space-y-3">
             <Field label={t.appt_patient} required hint={t.appt_patient_hint}>
               <PatientPicker
                 name="patient_id"
@@ -169,8 +179,7 @@ export default async function AppointmentsPage({
             <Field label={t.appt_reason} optional={`(${t.optional})`}>
               <Input name="reason" placeholder={t.appt_reason_placeholder} />
             </Field>
-            <SubmitBar label={t.appt_save} savingLabel={t.saving} />
-          </form>
+          </ActionForm>
         </Card>
       </div>
     </div>

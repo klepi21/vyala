@@ -1,11 +1,12 @@
-import { Trash2, UserPlus } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { demoContext } from "@/lib/demo";
 import { listMembers } from "@/lib/queries";
 import { demoAddMember, demoRemoveMember } from "@/lib/demo-actions";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import {
-  Badge, Card, Field, Input, PageTitle, PrimaryButton, Select,
+  Badge, Card, Field, Input, PageTitle, Select,
 } from "@/components/ui";
+import { ActionForm } from "@/components/ActionForm";
 
 export const metadata = { title: "Live demo, team" };
 
@@ -75,7 +76,7 @@ export default async function DemoTeam() {
           <Card className="p-5">
             <h3 className="mb-1 text-sm font-semibold">{t.team_add}</h3>
             <p className="mb-3 text-xs text-muted">{t.team_hint}</p>
-            <form action={demoAddMember} className="space-y-3">
+            <ActionForm action={demoAddMember} submitLabel={t.team_add} savingLabel={t.saving} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <Field label={`${t.team_name} *`}>
                   <Input name="full_name" required placeholder="Δρ. Σοφία Αλεξίου" />
@@ -96,8 +97,7 @@ export default async function DemoTeam() {
                   <Input name="specialty" placeholder="Παιδίατρος" />
                 </Field>
               </div>
-              <PrimaryButton type="submit"><UserPlus size={15} /> {t.team_add}</PrimaryButton>
-            </form>
+            </ActionForm>
           </Card>
         </div>
       </div>

@@ -14,7 +14,7 @@ export default async function DemoPatients({
 }) {
   const { q = "" } = await searchParams;
   const { clinic, locale, t } = await demoContext();
-  const patients = await listPatients(clinic.id, q);
+  const { patients } = await listPatients(clinic.id, q);
 
   return (
     <div>

@@ -7,6 +7,7 @@ import {
 import { Logo, LogoMark } from "@/components/Logo";
 import { DemoVideo } from "@/components/DemoVideo";
 import { Salesman, type SalesmanCopy } from "@/components/Salesman";
+import { TrustSection, type TrustCopy } from "@/components/TrustSection";
 
 export interface LandingCopy {
   locale: "en" | "el";
@@ -44,6 +45,7 @@ export interface LandingCopy {
   how_2_title: string; how_2_body: string;
   how_3_title: string; how_3_body: string;
   salesman: SalesmanCopy;
+  trust: TrustCopy;
   contact_title: string;
   contact_sub: string;
   contact_name: string;
@@ -54,6 +56,7 @@ export interface LandingCopy {
   contact_size_options: string[];
   contact_message: string;
   contact_submit: string;
+  contact_sending: string;
   contact_note: string;
   contact_sent_title: string;
   contact_sent_body: string;
@@ -349,6 +352,9 @@ export function Landing({ c }: { c: LandingCopy }) {
           </div>
         </div>
       </section>
+
+      {/* Where the data lives */}
+      <TrustSection c={c.trust} base={base} />
 
       {/* The person you talk to */}
       <div id="team">

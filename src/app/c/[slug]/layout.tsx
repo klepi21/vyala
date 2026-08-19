@@ -3,6 +3,8 @@ import { UserButton } from "@clerk/nextjs";
 import { LogoMark } from "@/components/Logo";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { BottomNav, SideNav, type NavItem } from "@/components/SideNav";
+import { GlobalSearch } from "@/components/GlobalSearch";
+import { searchPatientsAction } from "@/lib/actions";
 import { requireClinic } from "@/lib/tenancy";
 import type { ReactNode } from "react";
 
@@ -45,6 +47,20 @@ export default async function ClinicLayout({
             <p className="truncate text-xs text-muted">vyala.app/c/{clinic.slug}</p>
           </div>
         </Link>
+
+        <div className="mb-4">
+          <GlobalSearch
+            search={searchPatientsAction.bind(null, slug)}
+            basePath={`/c/${slug}`}
+            labels={{
+              open: t.search_open,
+              placeholder: t.search_placeholder,
+              hint: t.cancel,
+              none: t.patients_no_match,
+              short: t.search_short,
+            }}
+          />
+        </div>
 
         <SideNav items={nav} />
 

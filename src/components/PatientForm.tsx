@@ -1,5 +1,6 @@
 import { Field, Input, Panel, Textarea } from "@/components/ui";
-import { SubmitBar } from "@/components/SubmitBar";
+import { ActionForm } from "@/components/ActionForm";
+import type { FormState } from "@/lib/form-state";
 import type { Dict } from "@/lib/i18n";
 import type { Patient } from "@/lib/types";
 
@@ -13,11 +14,16 @@ export function PatientForm({
   patient,
 }: {
   t: Dict;
-  action: (formData: FormData) => Promise<void>;
+  action: (prev: FormState, formData: FormData) => Promise<FormState>;
   patient?: Patient;
 }) {
   return (
-    <form action={action} className="max-w-2xl space-y-4">
+    <ActionForm
+      action={action}
+      submitLabel={t.patient_save}
+      savingLabel={t.saving}
+      className="max-w-2xl space-y-4"
+    >
       <Panel title={t.pf_identity} description={t.pf_identity_hint}>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t.patient_first_name} required>
@@ -66,7 +72,6 @@ export function PatientForm({
         </div>
       </Panel>
 
-      <SubmitBar label={t.patient_save} savingLabel={t.saving} />
-    </form>
+    </ActionForm>
   );
 }

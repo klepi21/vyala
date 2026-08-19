@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, FileDown, FileText, Pencil, Trash2 } from "lucide-react";
 import { ConfirmButton } from "@/components/ConfirmButton";
+import { ActionForm } from "@/components/ActionForm";
 import { SubmitBar } from "@/components/SubmitBar";
 import { requireClinic } from "@/lib/tenancy";
 import { getPatient, listDocuments, listPayments, listVisits } from "@/lib/queries";
@@ -160,7 +161,7 @@ export default async function PatientPage({
           </div>
           <Card className="h-fit p-5">
             <h3 className="mb-3 text-sm font-semibold">{t.visit_new}</h3>
-            <form action={newVisit} className="space-y-3">
+            <ActionForm action={newVisit} submitLabel={t.visit_save} savingLabel={t.saving} className="space-y-3">
               <Field label={t.visit_date}>
                 <Input name="visit_date" type="date" defaultValue={clinicToday()} />
               </Field>
@@ -168,8 +169,7 @@ export default async function PatientPage({
               <Field label={t.visit_diagnosis}><Textarea name="diagnosis" className="min-h-14" /></Field>
               <Field label={t.visit_treatment}><Textarea name="treatment" className="min-h-14" /></Field>
               <Field label={t.visit_notes}><Textarea name="notes" className="min-h-14" /></Field>
-              <SubmitBar label={t.visit_save} savingLabel={t.saving} />
-            </form>
+            </ActionForm>
           </Card>
         </div>
       )}

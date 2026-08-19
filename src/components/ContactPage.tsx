@@ -2,7 +2,9 @@ import Link from "next/link";
 import { CheckCircle2, Clock, Mail, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { submitEnquiry } from "@/lib/actions";
-import { Card, Field, Input, PrimaryButton, Select, Textarea } from "@/components/ui";
+import { Card, Field, Input, Select, Textarea } from "@/components/ui";
+import { ActionForm } from "@/components/ActionForm";
+import { FormOpenedAt } from "@/components/FormOpenedAt";
 import type { LandingCopy } from "@/components/Landing";
 
 export function ContactPage({ c, sent }: { c: LandingCopy; sent: boolean }) {
@@ -56,7 +58,17 @@ export function ContactPage({ c, sent }: { c: LandingCopy; sent: boolean }) {
               </Link>
             </div>
           ) : (
-            <form action={submitEnquiry} className="space-y-4">
+            <ActionForm action={submitEnquiry} submitLabel={c.contact_submit} savingLabel={c.contact_sending}>
+              {/* Left empty by people, filled by bots. */}
+              <input
+                type="text"
+                name="company_website"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden
+                className="absolute h-0 w-0 overflow-hidden opacity-0"
+              />
+              <FormOpenedAt />
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label={`${c.contact_name} *`}>
                   <Input name="name" required autoComplete="name" />
@@ -81,13 +93,12 @@ export function ContactPage({ c, sent }: { c: LandingCopy; sent: boolean }) {
               <Field label={c.contact_message}>
                 <Textarea name="message" className="min-h-24" />
               </Field>
-              <PrimaryButton type="submit" className="w-full !py-3">{c.contact_submit}</PrimaryButton>
               <p className="text-center text-xs text-muted">
                 <Link href={`${base}/privacy`} className="underline hover:text-ink/70">
                   {c.footer_privacy}
                 </Link>
               </p>
-            </form>
+            </ActionForm>
           )}
         </Card>
       </main>

@@ -34,20 +34,62 @@ async function nameMaps(clinicId: string, patientIds: string[], memberIds: strin
   };
 }
 
-export async function listPatients(clinicId: string, term = ""): Promise<Patient[]> {
-  const d = await db();
+export const PATIENTS_PER_PAGE = 40;
+
+function patientFilter(clinicId: string, term: string) {
   const filter: Record<string, unknown> = { clinicId: oid(clinicId) };
   if (term.trim()) {
     const rx = new RegExp(term.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
     filter.$or = [{ firstName: rx }, { lastName: rx }, { amka: rx }, { phone: rx }];
   }
+  return filter;
+}
+
+/** One page of patients, with the total so the list can say what it is showing. */
+export async function listPatients(
+  clinicId: string,
+  term = "",
+  page = 1
+): Promise<{ patients: Patient[]; total: number; page: number; pages: number }> {
+  const d = await db();
+  const filter = patientFilter(clinicId, term);
+  const safePage = Math.max(1, Math.floor(page) || 1);
+
+  const [rows, total] = await Promise.all([
+    d.collection("patients")
+      .find(filter)
+      .sort({ lastName: 1, firstName: 1 })
+      .skip((safePage - 1) * PATIENTS_PER_PAGE)
+      .limit(PATIENTS_PER_PAGE)
+      .toArray(),
+    d.collection("patients").countDocuments(filter),
+  ]);
+
+  return {
+    patients: cleanAll(rows) as unknown as Patient[],
+    total,
+    page: safePage,
+    pages: Math.max(1, Math.ceil(total / PATIENTS_PER_PAGE)),
+  };
+}
+
+/** Fast lookup for the global search box. */
+export async function searchPatients(clinicId: string, term: string, limit = 8) {
+  if (!term.trim()) return [];
+  const d = await db();
   const rows = await d
     .collection("patients")
-    .find(filter)
-    .sort({ lastName: 1, firstName: 1 })
-    .limit(300)
+    .find(patientFilter(clinicId, term))
+    .project({ firstName: 1, lastName: 1, phone: 1, amka: 1 })
+    .sort({ lastName: 1 })
+    .limit(limit)
     .toArray();
-  return cleanAll(rows) as unknown as Patient[];
+  return rows.map((p) => ({
+    id: String(p._id),
+    name: `${p.lastName} ${p.firstName}`,
+    phone: (p.phone as string | null) ?? null,
+    amka: (p.amka as string | null) ?? null,
+  }));
 }
 
 export async function patientOptions(clinicId: string) {
@@ -142,6 +184,28 @@ export async function listAppointments(
   }));
 }
 
+export async function getAppointment(
+  clinicId: string,
+  appointmentId: string
+): Promise<Appointment | null> {
+  if (!isValidId(appointmentId)) return null;
+  const d = await db();
+  const rows = cleanAll(
+    await d
+      .collection("appointments")
+      .find({ _id: oid(appointmentId), clinicId: oid(clinicId) })
+      .toArray()
+  ) as unknown as Appointment[];
+  const appt = rows[0];
+  if (!appt) return null;
+  const maps = await nameMaps(clinicId, [appt.patientId], [appt.doctorId ?? ""]);
+  return {
+    ...appt,
+    patientName: maps.patients.get(appt.patientId) ?? "",
+    doctorName: appt.doctorId ? maps.members.get(appt.doctorId) ?? null : null,
+  };
+}
+
 export async function listPayments(clinicId: string, patientId?: string): Promise<Payment[]> {
   if (patientId && !isValidId(patientId)) return [];
   const d = await db();
@@ -219,6 +283,11 @@ export async function dashboardStats(clinicId: string) {
     ]).toArray(),
   ]);
 
+  const [anyAppointment, memberCount] = await Promise.all([
+    d.collection("appointments").countDocuments({ clinicId: oid(clinicId) }, { limit: 1 }),
+    d.collection("members").countDocuments({ clinicId: oid(clinicId) }),
+  ]);
+
   const weekStartYmd = clinicWeekStart(todayYmd);
   const { from: weekStart } = clinicDayBounds(weekStartYmd);
   const { to: weekEnd } = clinicDayBounds(shiftYmd(weekStartYmd, 6));
@@ -257,6 +326,12 @@ export async function dashboardStats(clinicId: string) {
     week,
     weekStart,
     recentPayments: payments.slice(0, 6),
+    setup: {
+      hasPatients: patientCount > 0,
+      hasAppointments: anyAppointment > 0,
+      hasTeam: memberCount > 1,
+      isNew: patientCount === 0 && anyAppointment === 0,
+    },
   };
 }
 

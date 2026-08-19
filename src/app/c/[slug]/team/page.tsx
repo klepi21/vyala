@@ -1,6 +1,6 @@
 import { Trash2 } from "lucide-react";
 import { ConfirmButton } from "@/components/ConfirmButton";
-import { SubmitBar } from "@/components/SubmitBar";
+import { ActionForm } from "@/components/ActionForm";
 import { requireClinic } from "@/lib/tenancy";
 import { listMembers } from "@/lib/queries";
 import { addMember, removeMember, updateClinic } from "@/lib/actions";
@@ -35,7 +35,7 @@ export default async function TeamPage({
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="p-5">
           <h3 className="mb-3 text-sm font-semibold">{t.team_clinic_info}</h3>
-          <form action={saveClinic} className="space-y-3">
+          <ActionForm action={saveClinic} submitLabel={t.team_save} savingLabel={t.saving} className="space-y-3" buttonClassName="max-w-40">
             <Field label={t.clinic_name}>
               <Input name="name" defaultValue={clinic.name} disabled={!isAdmin} />
             </Field>
@@ -53,8 +53,7 @@ export default async function TeamPage({
             <Field label={t.clinic_address}>
               <Input name="address" defaultValue={clinic.address ?? ""} disabled={!isAdmin} />
             </Field>
-            {isAdmin && <SubmitBar label={t.team_save} savingLabel={t.saving} className="max-w-40" />}
-          </form>
+          </ActionForm>
         </Card>
 
         <div className="space-y-4">
@@ -102,7 +101,7 @@ export default async function TeamPage({
             <Card className="p-5">
               <h3 className="mb-1 text-sm font-semibold">{t.team_add}</h3>
               <p className="mb-3 text-xs text-muted">{t.team_hint}</p>
-              <form action={add} className="space-y-3">
+              <ActionForm action={add} submitLabel={t.team_add} savingLabel={t.saving} className="space-y-3" buttonClassName="max-w-48">
                 <div className="grid grid-cols-2 gap-3">
                   <Field label={`${t.team_name} *`}>
                     <Input name="full_name" required />
@@ -123,8 +122,7 @@ export default async function TeamPage({
                     <Input name="specialty" />
                   </Field>
                 </div>
-                <SubmitBar label={t.team_add} savingLabel={t.saving} className="max-w-48" />
-              </form>
+              </ActionForm>
             </Card>
           )}
         </div>

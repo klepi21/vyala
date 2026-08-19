@@ -22,9 +22,12 @@ export function PatientPicker({
   quickAdd,
   labels,
   required,
+  initial,
 }: {
   name: string;
   patients: PatientOption[];
+  /** Preselected patient, for editing an existing record. */
+  initial?: PatientOption;
   quickAdd: (formData: FormData) => Promise<{ id: string; name: string } | void>;
   labels: {
     placeholder: string;
@@ -44,7 +47,7 @@ export function PatientPicker({
   const [open, setOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<PatientOption | null>(null);
+  const [selected, setSelected] = useState<PatientOption | null>(initial ?? null);
   const [extra, setExtra] = useState<PatientOption[]>([]);
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);

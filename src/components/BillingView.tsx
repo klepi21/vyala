@@ -1,7 +1,7 @@
 import { CheckCircle2, Printer, RotateCcw, Trash2, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import Link from "next/link";
 import { ConfirmButton } from "@/components/ConfirmButton";
-import { SubmitBar } from "@/components/SubmitBar";
+import { ActionForm } from "@/components/ActionForm";
 import { PatientPicker, type PatientOption } from "@/components/PatientPicker";
 import {
   Badge, Card, EmptyState, Field, Input, MoneyInput, PageTitle, Panel,
@@ -12,13 +12,14 @@ import { clinicToday } from "@/lib/time";
 import type { Dict } from "@/lib/i18n";
 import type { Expense, Invoice, Payment } from "@/lib/types";
 import type { Locale } from "@/lib/i18n";
+import type { FormState } from "@/lib/form-state";
 
 export type BillingTab = "payments" | "invoices" | "expenses";
 
 export interface BillingActions {
-  createPayment: (fd: FormData) => Promise<void>;
-  createInvoice: (fd: FormData) => Promise<void>;
-  createExpense: (fd: FormData) => Promise<void>;
+  createPayment: (prev: FormState, fd: FormData) => Promise<FormState>;
+  createInvoice: (prev: FormState, fd: FormData) => Promise<FormState>;
+  createExpense: (prev: FormState, fd: FormData) => Promise<FormState>;
   quickAddPatient: (fd: FormData) => Promise<{ id: string; name: string } | void>;
   setInvoicePaid: (id: string) => Promise<void>;
   setInvoiceIssued: (id: string) => Promise<void>;
@@ -143,7 +144,7 @@ export function BillingView({
           </Card>
 
           <Panel title={t.pay_new} description={t.pay_new_hint} className="h-fit">
-            <form action={actions.createPayment} className="space-y-4">
+            <ActionForm action={actions.createPayment} submitLabel={t.pay_save} savingLabel={t.saving}>
               <Field label={t.pay_amount} required>
                 <MoneyInput name="amount" required placeholder="0.00" />
               </Field>
@@ -169,8 +170,7 @@ export function BillingView({
               <Field label={t.pay_note} optional={`(${t.optional})`}>
                 <Textarea name="note" className="min-h-16" placeholder={t.pay_note_placeholder} />
               </Field>
-              <SubmitBar label={t.pay_save} savingLabel={t.saving} />
-            </form>
+            </ActionForm>
           </Panel>
         </div>
       )}
@@ -226,7 +226,7 @@ export function BillingView({
           </Card>
 
           <Panel title={t.inv_new} description={t.inv_new_hint} className="h-fit">
-            <form action={actions.createInvoice} className="space-y-4">
+            <ActionForm action={actions.createInvoice} submitLabel={t.inv_save} savingLabel={t.saving}>
               <Field label={t.inv_amount} required>
                 <MoneyInput name="amount" required placeholder="0.00" />
               </Field>
@@ -244,8 +244,7 @@ export function BillingView({
               <Field label={t.inv_note} hint={t.inv_note_hint}>
                 <Textarea name="note" className="min-h-16" placeholder={t.inv_default_line} />
               </Field>
-              <SubmitBar label={t.inv_save} savingLabel={t.saving} />
-            </form>
+            </ActionForm>
           </Panel>
         </div>
       )}
@@ -280,7 +279,7 @@ export function BillingView({
           </Card>
 
           <Panel title={t.exp_new} description={t.exp_new_hint} className="h-fit">
-            <form action={actions.createExpense} className="space-y-4">
+            <ActionForm action={actions.createExpense} submitLabel={t.exp_save} savingLabel={t.saving}>
               <Field label={t.exp_amount} required>
                 <MoneyInput name="amount" required placeholder="0.00" />
               </Field>
@@ -305,8 +304,7 @@ export function BillingView({
               <Field label={t.pay_note} optional={`(${t.optional})`}>
                 <Textarea name="note" className="min-h-16" />
               </Field>
-              <SubmitBar label={t.exp_save} savingLabel={t.saving} />
-            </form>
+            </ActionForm>
           </Panel>
         </div>
       )}

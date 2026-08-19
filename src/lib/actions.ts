@@ -8,15 +8,50 @@ import { Readable } from "node:stream";
 import { bucket, db, ensureIndexes, isValidId, oid } from "./mongo";
 import { requireClinic, slugify } from "./tenancy";
 import { clinicToday, fromClinicLocal } from "./time";
+import { getDict } from "./i18n";
+import { getLocale } from "./tenancy";
+import { formError, formOk, type FormState } from "./form-state";
 
-/** Throws unless the patient exists inside this clinic. Guards every patient-scoped write. */
-async function assertPatient(clinicId: string, patientId: string) {
-  if (!isValidId(patientId)) throw new Error("Unknown patient");
+/** True when the patient exists inside this clinic. Guards every patient-scoped write. */
+async function patientBelongs(clinicId: string, patientId: string): Promise<boolean> {
+  if (!isValidId(patientId)) return false;
   const d = await db();
   const found = await d
     .collection("patients")
     .findOne({ _id: oid(patientId), clinicId: oid(clinicId) }, { projection: { _id: 1 } });
-  if (!found) throw new Error("Unknown patient");
+  return Boolean(found);
+}
+
+/**
+ * Append-only record of who changed what.
+ *
+ * Medical records carry an accountability duty under the GDPR, and the app's
+ * own policy leans on it, so every write that alters clinical or financial
+ * data leaves a line here. Failures are swallowed: an audit problem must never
+ * block a doctor from saving.
+ */
+async function recordAudit(
+  clinicId: string,
+  action: string,
+  subjectId?: string,
+  detail?: string
+) {
+  try {
+    const { userId } = await auth();
+    const user = await currentUser();
+    const d = await db();
+    await d.collection("audit").insertOne({
+      clinicId: oid(clinicId),
+      action,
+      subjectId: subjectId ?? null,
+      detail: detail ?? null,
+      actorClerkId: userId ?? null,
+      actorEmail: user?.emailAddresses?.[0]?.emailAddress ?? null,
+      at: now(),
+    });
+  } catch {
+    // Deliberately ignored.
+  }
 }
 
 /** Resolves a doctor id only if that member really belongs to this clinic. */
@@ -45,7 +80,10 @@ export async function setLocale(locale: string, path: string) {
 }
 
 // ── Clinic / onboarding ──────────────────────────────────────────
-export async function createClinic(formData: FormData) {
+export async function createClinic(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
   await ensureIndexes();
@@ -54,7 +92,8 @@ export async function createClinic(formData: FormData) {
   const email = user?.emailAddresses?.[0]?.emailAddress?.toLowerCase() ?? "";
   const name = str(formData, "name");
   const fullName = str(formData, "full_name");
-  if (!name || !fullName) throw new Error("Clinic name and your name are both required");
+  if (!name) return formError("Give your practice a name.");
+  if (!fullName) return formError("Tell us your name so we know who the admin is.");
 
   const d = await db();
   const base = slugify(name);
@@ -85,9 +124,13 @@ export async function createClinic(formData: FormData) {
   redirect(`/c/${slug}`);
 }
 
-export async function updateClinic(slug: string, formData: FormData) {
-  const { clinic, member } = await requireClinic(slug);
-  if (member.role !== "admin") throw new Error("Only admins can change clinic settings");
+export async function updateClinic(
+  slug: string,
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const { clinic, member, t } = await requireClinic(slug);
+  if (member.role !== "admin") return formError(t.err_admin_only);
   const d = await db();
   await d.collection("clinics").updateOne(
     { _id: oid(clinic.id) },
@@ -100,16 +143,23 @@ export async function updateClinic(slug: string, formData: FormData) {
       },
     }
   );
+  await recordAudit(clinic.id, "clinic.update");
   revalidatePath(`/c/${slug}/team`);
+  return formOk;
 }
 
 // ── Team ─────────────────────────────────────────────────────────
-export async function addMember(slug: string, formData: FormData) {
-  const { clinic, member } = await requireClinic(slug);
-  if (member.role !== "admin") throw new Error("Only admins can add team members");
+export async function addMember(
+  slug: string,
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const { clinic, member, t } = await requireClinic(slug);
+  if (member.role !== "admin") return formError(t.err_admin_only);
   const email = str(formData, "email").toLowerCase();
   const fullName = str(formData, "full_name");
-  if (!email || !fullName) throw new Error("Name and email are both required");
+  if (!fullName) return formError(t.err_member_name);
+  if (!email || !email.includes("@")) return formError(t.err_member_email);
   const role = str(formData, "role");
 
   const d = await db();
@@ -125,7 +175,9 @@ export async function addMember(slug: string, formData: FormData) {
     },
     { upsert: true }
   );
+  await recordAudit(clinic.id, "member.add", undefined, email);
   revalidatePath(`/c/${slug}/team`);
+  return formOk;
 }
 
 export async function removeMember(slug: string, memberId: string) {
@@ -135,6 +187,7 @@ export async function removeMember(slug: string, memberId: string) {
   if (!isValidId(memberId)) return;
   const d = await db();
   await d.collection("members").deleteOne({ _id: oid(memberId), clinicId: oid(clinic.id) });
+  await recordAudit(clinic.id, "member.remove", memberId);
   revalidatePath(`/c/${slug}/team`);
 }
 
@@ -153,33 +206,49 @@ function patientFields(fd: FormData) {
   };
 }
 
-export async function createPatient(slug: string, formData: FormData) {
-  const { clinic } = await requireClinic(slug);
+export async function createPatient(
+  slug: string,
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const { clinic, t } = await requireClinic(slug);
   const fields = patientFields(formData);
-  if (!fields.firstName || !fields.lastName) throw new Error("First and last name are required");
+  if (!fields.firstName || !fields.lastName) return formError(t.err_names);
   const d = await db();
   const { insertedId } = await d
     .collection("patients")
     .insertOne({ ...fields, clinicId: oid(clinic.id), createdAt: now() });
+  await recordAudit(clinic.id, "patient.create", String(insertedId));
   redirect(`/c/${slug}/patients/${insertedId}`);
 }
 
-export async function updatePatient(slug: string, patientId: string, formData: FormData) {
-  const { clinic } = await requireClinic(slug);
-  await assertPatient(clinic.id, patientId);
+export async function updatePatient(
+  slug: string,
+  patientId: string,
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const { clinic, t } = await requireClinic(slug);
+  if (!(await patientBelongs(clinic.id, patientId))) return formError(t.err_unknown_patient);
   const fields = patientFields(formData);
-  if (!fields.firstName || !fields.lastName) throw new Error("First and last name are required");
+  if (!fields.firstName || !fields.lastName) return formError(t.err_names);
   const d = await db();
   await d
     .collection("patients")
     .updateOne({ _id: oid(patientId), clinicId: oid(clinic.id) }, { $set: fields });
+  await recordAudit(clinic.id, "patient.update", patientId);
   redirect(`/c/${slug}/patients/${patientId}`);
 }
 
 // ── Visits ───────────────────────────────────────────────────────
-export async function createVisit(slug: string, patientId: string, formData: FormData) {
-  const { clinic, member } = await requireClinic(slug);
-  await assertPatient(clinic.id, patientId);
+export async function createVisit(
+  slug: string,
+  patientId: string,
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const { clinic, member, t } = await requireClinic(slug);
+  if (!(await patientBelongs(clinic.id, patientId))) return formError(t.err_unknown_patient);
   const d = await db();
   await d.collection("visits").insertOne({
     clinicId: oid(clinic.id),
@@ -192,22 +261,29 @@ export async function createVisit(slug: string, patientId: string, formData: For
     notes: opt(formData, "notes"),
     createdAt: now(),
   });
+  await recordAudit(clinic.id, "visit.create", patientId);
   revalidatePath(`/c/${slug}/patients/${patientId}`);
+  return formOk;
 }
 
 // ── Appointments ─────────────────────────────────────────────────
-export async function createAppointment(slug: string, formData: FormData) {
-  const { clinic } = await requireClinic(slug);
+export async function createAppointment(
+  slug: string,
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const { clinic, t } = await requireClinic(slug);
   const patientId = str(formData, "patient_id");
   const date = str(formData, "date");
   const time = str(formData, "time");
-  if (!patientId || !date || !time) throw new Error("Patient, date and time are required");
-  await assertPatient(clinic.id, patientId);
+  if (!patientId) return formError(t.err_pick_patient);
+  if (!date || !time) return formError(t.err_date_time);
+  if (!(await patientBelongs(clinic.id, patientId))) return formError(t.err_unknown_patient);
   const doctorId = await resolveDoctor(clinic.id, str(formData, "doctor_id"));
   const duration = parseInt(str(formData, "duration_min") || "30", 10) || 30;
 
   const startsAt = fromClinicLocal(date, time);
-  if (Number.isNaN(startsAt.getTime())) throw new Error("That date and time are not valid");
+  if (Number.isNaN(startsAt.getTime())) return formError(t.err_date_time);
 
   const d = await db();
   await d.collection("appointments").insertOne({
@@ -221,6 +297,57 @@ export async function createAppointment(slug: string, formData: FormData) {
     createdAt: now(),
   });
   revalidatePath(`/c/${slug}/appointments`);
+  revalidatePath(`/c/${slug}`);
+  return formOk;
+}
+
+/** Move or amend an existing appointment. */
+export async function updateAppointment(
+  slug: string,
+  appointmentId: string,
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const { clinic, t } = await requireClinic(slug);
+  if (!isValidId(appointmentId)) return formError(t.err_unknown_appointment);
+
+  const date = str(formData, "date");
+  const time = str(formData, "time");
+  if (!date || !time) return formError(t.err_date_time);
+  const startsAt = fromClinicLocal(date, time);
+  if (Number.isNaN(startsAt.getTime())) return formError(t.err_date_time);
+
+  const patientId = str(formData, "patient_id");
+  if (patientId && !(await patientBelongs(clinic.id, patientId))) {
+    return formError(t.err_unknown_patient);
+  }
+  const doctorId = await resolveDoctor(clinic.id, str(formData, "doctor_id"));
+  const duration = parseInt(str(formData, "duration_min") || "30", 10) || 30;
+  const status = str(formData, "status");
+
+  const d = await db();
+  const result = await d.collection("appointments").updateOne(
+    { _id: oid(appointmentId), clinicId: oid(clinic.id) },
+    {
+      $set: {
+        ...(patientId ? { patientId: oid(patientId) } : {}),
+        doctorId,
+        startsAt: startsAt.toISOString(),
+        durationMin: Math.min(480, Math.max(5, duration)),
+        reason: opt(formData, "reason"),
+        ...(["scheduled", "completed", "cancelled", "no_show"].includes(status)
+          ? { status }
+          : {}),
+        updatedAt: now(),
+      },
+    }
+  );
+  if (result.matchedCount === 0) return formError(t.err_unknown_appointment);
+
+  await recordAudit(clinic.id, "appointment.update", appointmentId);
+  revalidatePath(`/c/${slug}/appointments`);
+  revalidatePath(`/c/${slug}`);
+  redirect(`/c/${slug}/appointments?date=${str(formData, "date")}`);
 }
 
 export async function setAppointmentStatus(slug: string, appointmentId: string, status: string) {
@@ -235,13 +362,20 @@ export async function setAppointmentStatus(slug: string, appointmentId: string, 
 }
 
 // ── Payments ─────────────────────────────────────────────────────
-export async function createPayment(slug: string, formData: FormData) {
-  const { clinic } = await requireClinic(slug);
-  const amount = parseFloat(str(formData, "amount") || "0");
-  if (!Number.isFinite(amount) || amount < 0) throw new Error("Enter a valid amount");
+export async function createPayment(
+  slug: string,
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const { clinic, t } = await requireClinic(slug);
+  const raw = str(formData, "amount");
+  const amount = parseFloat(raw || "0");
+  if (!raw || !Number.isFinite(amount) || amount <= 0) return formError(t.err_amount);
   const method = str(formData, "method");
   const patientId = str(formData, "patient_id");
-  if (patientId) await assertPatient(clinic.id, patientId);
+  if (patientId && !(await patientBelongs(clinic.id, patientId))) {
+    return formError(t.err_unknown_patient);
+  }
 
   const d = await db();
   await d.collection("payments").insertOne({
@@ -253,16 +387,26 @@ export async function createPayment(slug: string, formData: FormData) {
     note: opt(formData, "note"),
     createdAt: now(),
   });
+  await recordAudit(clinic.id, "payment.create", patientId || undefined, `€${amount}`);
   revalidatePath(`/c/${slug}/billing`);
+  revalidatePath(`/c/${slug}`);
+  return formOk;
 }
 
 // ── Invoices ─────────────────────────────────────────────────────
-export async function createInvoice(slug: string, formData: FormData) {
-  const { clinic } = await requireClinic(slug);
-  const amount = parseFloat(str(formData, "amount") || "0");
-  if (!Number.isFinite(amount) || amount < 0) throw new Error("Enter a valid amount");
+export async function createInvoice(
+  slug: string,
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const { clinic, t } = await requireClinic(slug);
+  const raw = str(formData, "amount");
+  const amount = parseFloat(raw || "0");
+  if (!raw || !Number.isFinite(amount) || amount <= 0) return formError(t.err_amount);
   const patientId = str(formData, "patient_id");
-  if (patientId) await assertPatient(clinic.id, patientId);
+  if (patientId && !(await patientBelongs(clinic.id, patientId))) {
+    return formError(t.err_unknown_patient);
+  }
 
   const d = await db();
   const manualNumber = str(formData, "number");
@@ -283,7 +427,7 @@ export async function createInvoice(slug: string, formData: FormData) {
       await d.collection("invoices").insertOne({ ...doc, number: manualNumber });
     } catch (err) {
       if ((err as { code?: number }).code === 11000) {
-        throw new Error(`Invoice ${manualNumber} already exists`);
+        return formError(`${t.err_invoice_taken} ${manualNumber}`);
       }
       throw err;
     }
@@ -308,7 +452,10 @@ export async function createInvoice(slug: string, formData: FormData) {
       }
     }
   }
+  await recordAudit(clinic.id, "invoice.create", patientId || undefined, `€${amount}`);
   revalidatePath(`/c/${slug}/billing`);
+  revalidatePath(`/c/${slug}`);
+  return formOk;
 }
 
 export async function markInvoiceIssued(slug: string, invoiceId: string) {
@@ -390,22 +537,56 @@ export async function deleteDocument(slug: string, documentId: string) {
 }
 
 // ── Sales enquiries from the landing page ────────────────────────
-export async function submitEnquiry(formData: FormData): Promise<void> {
+/**
+ * Capture a demo request.
+ *
+ * There is no outbound email yet, so the record itself has to carry
+ * everything needed to work the lead: a status to move through, when it
+ * arrived, which language the person was reading, and a clear log line that
+ * shows up in the hosting logs as a poor man's notification.
+ *
+ * Two cheap defences keep the bots out. A hidden field no human can see must
+ * stay empty, and a form completed inside three seconds is not a person
+ * typing.
+ */
+export async function submitEnquiry(_prev: FormState, formData: FormData): Promise<FormState> {
   const name = str(formData, "name");
   const email = str(formData, "email");
-  if (!name || !email) throw new Error("Name and email are required");
+  const locale = await getLocale();
+  const t = getDict(locale);
+
+  // Hidden from people, irresistible to bots.
+  if (str(formData, "company_website")) return formOk;
+
+  const startedAt = parseInt(str(formData, "started_at") || "0", 10);
+  if (startedAt && Date.now() - startedAt < 3000) return formError(t.err_too_fast);
+
+  if (!name) return formError(t.err_lead_name);
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return formError(t.err_lead_email);
+
   await ensureIndexes();
   const d = await db();
-  await d.collection("leads").insertOne({
+  const lead = {
     name,
-    email,
+    email: email.toLowerCase(),
     phone: opt(formData, "phone"),
     clinicName: opt(formData, "clinic"),
     size: opt(formData, "size"),
     message: opt(formData, "message"),
+    locale,
+    status: "new" as const,
     createdAt: now(),
-  });
-  redirect("/contact?sent=1");
+  };
+  await d.collection("leads").insertOne(lead);
+
+  // Until email is wired up this line is the notification: it is searchable
+  // in the hosting logs and carries enough to act on without opening the app.
+  console.log(
+    `[vyala][lead] ${lead.name} <${lead.email}> ${lead.phone ?? "no phone"} | ` +
+      `${lead.clinicName ?? "no practice"} | ${lead.size ?? "size unknown"} | ${locale}`
+  );
+
+  redirect(`${locale === "el" ? "/el" : ""}/contact?sent=1`);
 }
 
 // ── Expenses ─────────────────────────────────────────────────────
@@ -414,10 +595,15 @@ const EXPENSE_CATEGORIES = [
   "utilities", "insurance", "marketing", "other",
 ];
 
-export async function createExpense(slug: string, formData: FormData) {
-  const { clinic } = await requireClinic(slug);
-  const amount = parseFloat(str(formData, "amount") || "0");
-  if (!Number.isFinite(amount) || amount < 0) throw new Error("Enter a valid amount");
+export async function createExpense(
+  slug: string,
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const { clinic, t } = await requireClinic(slug);
+  const raw = str(formData, "amount");
+  const amount = parseFloat(raw || "0");
+  if (!raw || !Number.isFinite(amount) || amount <= 0) return formError(t.err_amount);
   const category = str(formData, "category");
   const d = await db();
   await d.collection("expenses").insertOne({
@@ -429,7 +615,9 @@ export async function createExpense(slug: string, formData: FormData) {
     note: opt(formData, "note"),
     createdAt: now(),
   });
+  await recordAudit(clinic.id, "expense.create", undefined, `€${amount}`);
   revalidatePath(`/c/${slug}/billing`);
+  return formOk;
 }
 
 export async function deleteExpense(slug: string, expenseId: string) {
@@ -462,4 +650,49 @@ export async function quickAddPatient(slug: string, formData: FormData) {
   });
   revalidatePath(`/c/${slug}/patients`);
   return { id: String(insertedId), name: `${lastName} ${firstName}` };
+}
+
+// ── Erasure and export ───────────────────────────────────────────
+/**
+ * Remove a patient and everything attached to them.
+ *
+ * A patient exercising the right to erasure needs this to be one action, not
+ * a support ticket, so visits, documents, appointments and the file itself go
+ * together. Payments and invoices keep their amounts for the practice's own
+ * accounting duty but are unlinked from the person.
+ */
+export async function deletePatient(slug: string, patientId: string) {
+  const { clinic, member } = await requireClinic(slug);
+  if (member.role !== "admin") throw new Error("Only admins can delete a patient");
+  if (!isValidId(patientId)) return;
+
+  const d = await db();
+  const scope = { clinicId: oid(clinic.id), patientId: oid(patientId) };
+
+  const docs = await d.collection("documents").find(scope).toArray();
+  if (docs.length) {
+    const gfs = await bucket();
+    await Promise.all(docs.map((doc) => gfs.delete(doc.fileId).catch(() => {})));
+  }
+
+  await Promise.all([
+    d.collection("documents").deleteMany(scope),
+    d.collection("visits").deleteMany(scope),
+    d.collection("appointments").deleteMany(scope),
+    // The money stays on the books, detached from the person.
+    d.collection("payments").updateMany(scope, { $set: { patientId: null } }),
+    d.collection("invoices").updateMany(scope, { $set: { patientId: null } }),
+  ]);
+  await d.collection("patients").deleteOne({ _id: oid(patientId), clinicId: oid(clinic.id) });
+
+  await recordAudit(clinic.id, "patient.delete", patientId);
+  revalidatePath(`/c/${slug}/patients`);
+  redirect(`/c/${slug}/patients`);
+}
+
+/** Backs the global search box. Read-only and scoped to the caller's clinic. */
+export async function searchPatientsAction(slug: string, term: string) {
+  const { clinic } = await requireClinic(slug);
+  const { searchPatients } = await import("./queries");
+  return searchPatients(clinic.id, term);
 }

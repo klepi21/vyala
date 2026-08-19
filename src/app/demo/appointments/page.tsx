@@ -10,7 +10,7 @@ import {
   Select,
 } from "@/components/ui";
 import { PatientPicker } from "@/components/PatientPicker";
-import { SubmitBar } from "@/components/SubmitBar";
+import { ActionForm } from "@/components/ActionForm";
 import { time, weekday } from "@/lib/format";
 import { clinicDayBounds, clinicToday, shiftYmd } from "@/lib/time";
 
@@ -121,7 +121,7 @@ export default async function DemoAppointments({
 
         <Card className="h-fit p-5">
           <h3 className="mb-3 text-sm font-semibold">{t.appt_new}</h3>
-          <form action={demoCreateAppointment} className="space-y-3">
+          <ActionForm action={demoCreateAppointment} submitLabel={t.appt_save} savingLabel={t.saving} className="space-y-3">
             <Field label={t.appt_patient} required hint={t.appt_patient_hint}>
               <PatientPicker
                 name="patient_id"
@@ -165,8 +165,7 @@ export default async function DemoAppointments({
             <Field label={t.appt_reason} optional={`(${t.optional})`}>
               <Input name="reason" placeholder={t.appt_reason_placeholder} />
             </Field>
-            <SubmitBar label={t.appt_save} savingLabel={t.saving} />
-          </form>
+          </ActionForm>
         </Card>
       </div>
     </div>

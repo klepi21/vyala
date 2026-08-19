@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "node --env-file=.env.local scripts/seed-demo.mjs",
-    "record": "node scripts/record-demo.mjs"
+    "record": "node scripts/record-demo.mjs",
+    "leads": "node --env-file=.env.local scripts/leads.mjs",
+    "export": "node --env-file=.env.local scripts/export-clinic.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.7.7",

@@ -5,7 +5,8 @@ import { SetupNotice } from "@/components/SetupNotice";
 import { getLocale } from "@/lib/tenancy";
 import { getDict } from "@/lib/i18n";
 import { Logo } from "@/components/Logo";
-import { Card, Field, Input, PrimaryButton } from "@/components/ui";
+import { Card, Field, Input } from "@/components/ui";
+import { ActionForm } from "@/components/ActionForm";
 
 export default async function OnboardingPage() {
   if (!isClerkConfigured() || !isDbConfigured()) return <SetupNotice />;
@@ -21,7 +22,7 @@ export default async function OnboardingPage() {
         <Card className="p-6">
           <h1 className="text-lg font-semibold">{t.onb_title}</h1>
           <p className="mb-5 mt-1 text-sm text-muted">{t.onb_subtitle}</p>
-          <form action={createClinic} className="space-y-4">
+          <ActionForm action={createClinic} submitLabel={t.onb_create} savingLabel={t.saving}>
             <Field label={`${t.onb_clinic_name} *`}>
               <Input name="name" required placeholder="Ιατρείο Παπαδόπουλος" />
             </Field>
@@ -31,8 +32,7 @@ export default async function OnboardingPage() {
             <Field label={t.onb_specialty}>
               <Input name="specialty" placeholder="Παθολόγος" />
             </Field>
-            <PrimaryButton type="submit" className="w-full">{t.onb_create}</PrimaryButton>
-          </form>
+          </ActionForm>
         </Card>
       </div>
     </main>

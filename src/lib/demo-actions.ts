@@ -5,6 +5,9 @@ import { redirect } from "next/navigation";
 import { db, isValidId, oid } from "./mongo";
 import { demoClinicId } from "./demo";
 import { clinicToday, fromClinicLocal } from "./time";
+import { formError, formOk, type FormState } from "./form-state";
+import { getDict } from "./i18n";
+import { getLocale } from "./tenancy";
 
 /**
  * Writes for the public showroom.
@@ -21,6 +24,11 @@ const today = () => clinicToday();
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 const opt = (fd: FormData, k: string) => str(fd, k) || null;
 
+/** The dictionary for whichever language the visitor is reading. */
+async function dict() {
+  return getDict(await getLocale());
+}
+
 async function scoped(patientId?: string) {
   const clinicId = await demoClinicId();
   const d = await db();
@@ -35,11 +43,15 @@ async function scoped(patientId?: string) {
 }
 
 // ── Patients ─────────────────────────────────────────────────────
-export async function demoCreatePatient(formData: FormData) {
+export async function demoCreatePatient(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const t = await dict();
   const { d, clinicId } = await scoped();
   const firstName = str(formData, "first_name");
   const lastName = str(formData, "last_name");
-  if (!firstName || !lastName) throw new Error("First and last name are required");
+  if (!firstName || !lastName) return formError(t.err_names);
   const { insertedId } = await d.collection("patients").insertOne({
     clinicId,
     firstName,
@@ -58,15 +70,20 @@ export async function demoCreatePatient(formData: FormData) {
 }
 
 // ── Appointments ─────────────────────────────────────────────────
-export async function demoCreateAppointment(formData: FormData) {
+export async function demoCreateAppointment(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const t = await dict();
   const patientId = str(formData, "patient_id");
   const date = str(formData, "date");
   const time = str(formData, "time");
-  if (!patientId || !date || !time) throw new Error("Patient, date and time are required");
+  if (!patientId) return formError(t.err_pick_patient);
+  if (!date || !time) return formError(t.err_date_time);
 
   const { d, clinicId } = await scoped(patientId);
   const startsAt = fromClinicLocal(date, time);
-  if (Number.isNaN(startsAt.getTime())) throw new Error("That date and time are not valid");
+  if (Number.isNaN(startsAt.getTime())) return formError(t.err_date_time);
 
   const rawDoctor = str(formData, "doctor_id");
   const doctor =
@@ -88,6 +105,7 @@ export async function demoCreateAppointment(formData: FormData) {
   });
   revalidatePath("/demo/appointments");
   revalidatePath("/demo");
+  return formOk;
 }
 
 export async function demoSetAppointmentStatus(appointmentId: string, status: string) {
@@ -102,7 +120,11 @@ export async function demoSetAppointmentStatus(appointmentId: string, status: st
 }
 
 // ── Visits ───────────────────────────────────────────────────────
-export async function demoCreateVisit(patientId: string, formData: FormData) {
+export async function demoCreateVisit(
+  patientId: string,
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
   const { d, clinicId } = await scoped(patientId);
   const doctor = await d.collection("members").findOne({ clinicId, role: "admin" });
   await d.collection("visits").insertOne({
@@ -118,12 +140,18 @@ export async function demoCreateVisit(patientId: string, formData: FormData) {
     demoAdded: true,
   });
   revalidatePath(`/demo/patients/${patientId}`);
+  return formOk;
 }
 
 // ── Payments ─────────────────────────────────────────────────────
-export async function demoCreatePayment(formData: FormData) {
-  const amount = parseFloat(str(formData, "amount") || "0");
-  if (!Number.isFinite(amount) || amount < 0) throw new Error("Enter a valid amount");
+export async function demoCreatePayment(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const t = await dict();
+  const raw = str(formData, "amount");
+  const amount = parseFloat(raw || "0");
+  if (!raw || !Number.isFinite(amount) || amount <= 0) return formError(t.err_amount);
   const patientId = str(formData, "patient_id");
   const { d, clinicId } = await scoped(patientId || undefined);
   const method = str(formData, "method");
@@ -137,14 +165,20 @@ export async function demoCreatePayment(formData: FormData) {
     createdAt: now(),
     demoAdded: true,
   });
-  revalidatePath("/demo/payments");
+  revalidatePath("/demo/billing");
   revalidatePath("/demo");
+  return formOk;
 }
 
 // ── Invoices ─────────────────────────────────────────────────────
-export async function demoCreateInvoice(formData: FormData) {
-  const amount = parseFloat(str(formData, "amount") || "0");
-  if (!Number.isFinite(amount) || amount < 0) throw new Error("Enter a valid amount");
+export async function demoCreateInvoice(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const t = await dict();
+  const raw = str(formData, "amount");
+  const amount = parseFloat(raw || "0");
+  if (!raw || !Number.isFinite(amount) || amount <= 0) return formError(t.err_amount);
   const patientId = str(formData, "patient_id");
   const { d, clinicId } = await scoped(patientId || undefined);
 
@@ -167,8 +201,9 @@ export async function demoCreateInvoice(formData: FormData) {
     createdAt: now(),
     demoAdded: true,
   });
-  revalidatePath("/demo/invoices");
+  revalidatePath("/demo/billing");
   revalidatePath("/demo");
+  return formOk;
 }
 
 export async function demoSetInvoiceStatus(invoiceId: string, status: string) {
@@ -176,15 +211,21 @@ export async function demoSetInvoiceStatus(invoiceId: string, status: string) {
   if (!["issued", "paid"].includes(status)) return;
   const { d, clinicId } = await scoped();
   await d.collection("invoices").updateOne({ _id: oid(invoiceId), clinicId }, { $set: { status } });
-  revalidatePath("/demo/invoices");
+  revalidatePath("/demo/billing");
   revalidatePath("/demo");
+  return formOk;
 }
 
 // ── Team ─────────────────────────────────────────────────────────
-export async function demoAddMember(formData: FormData) {
+export async function demoAddMember(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const t = await dict();
   const email = str(formData, "email").toLowerCase();
   const fullName = str(formData, "full_name");
-  if (!email || !fullName) throw new Error("Name and email are both required");
+  if (!fullName) return formError(t.err_member_name);
+  if (!email || !email.includes("@")) return formError(t.err_member_email);
   const { d, clinicId } = await scoped();
   const role = str(formData, "role");
   await d.collection("members").updateOne(
@@ -201,6 +242,7 @@ export async function demoAddMember(formData: FormData) {
   );
   revalidatePath("/demo/team");
   revalidatePath("/demo/appointments");
+  return formOk;
 }
 
 export async function demoRemoveMember(memberId: string) {
@@ -242,9 +284,14 @@ const EXPENSE_CATEGORIES = [
   "utilities", "insurance", "marketing", "other",
 ];
 
-export async function demoCreateExpense(formData: FormData) {
-  const amount = parseFloat(str(formData, "amount") || "0");
-  if (!Number.isFinite(amount) || amount < 0) throw new Error("Enter a valid amount");
+export async function demoCreateExpense(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const t = await dict();
+  const raw = str(formData, "amount");
+  const amount = parseFloat(raw || "0");
+  if (!raw || !Number.isFinite(amount) || amount <= 0) return formError(t.err_amount);
   const { d, clinicId } = await scoped();
   const category = str(formData, "category");
   await d.collection("expenses").insertOne({
@@ -259,6 +306,7 @@ export async function demoCreateExpense(formData: FormData) {
   });
   revalidatePath("/demo/billing");
   revalidatePath("/demo/analytics");
+  return formOk;
 }
 
 export async function demoDeleteExpense(expenseId: string) {
@@ -291,11 +339,16 @@ export async function demoQuickAddPatient(formData: FormData) {
   return { id: String(insertedId), name: `${lastName} ${firstName}` };
 }
 
-export async function demoUpdatePatient(patientId: string, formData: FormData) {
+export async function demoUpdatePatient(
+  patientId: string,
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const t = await dict();
   const { d, clinicId } = await scoped(patientId);
   const firstName = str(formData, "first_name");
   const lastName = str(formData, "last_name");
-  if (!firstName || !lastName) throw new Error("First and last name are required");
+  if (!firstName || !lastName) return formError(t.err_names);
   await d.collection("patients").updateOne(
     { _id: oid(patientId), clinicId },
     {

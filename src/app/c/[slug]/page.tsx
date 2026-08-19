@@ -9,6 +9,7 @@ import { WeekCalendar } from "@/components/WeekCalendar";
 import {
   MetricCard, RecentPayments, SectionHeader, TodayTimeline,
 } from "@/components/dashboard";
+import { GettingStarted } from "@/components/GettingStarted";
 import { moneyRound } from "@/lib/format";
 
 export default async function DashboardPage({
@@ -63,6 +64,16 @@ export default async function DashboardPage({
           </Link>
         </div>
       </div>
+      {s.setup.isNew && (
+        <GettingStarted
+          t={t}
+          base={base}
+          hasPatients={s.setup.hasPatients}
+          hasAppointments={s.setup.hasAppointments}
+          hasTeam={s.setup.hasTeam}
+        />
+      )}
+
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <MetricCard
           label={t.dash_today}

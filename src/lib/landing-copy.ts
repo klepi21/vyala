@@ -59,6 +59,35 @@ export const landingEn: LandingCopy = {
   how_2_body: "You get your own address, your team added, and your existing patients imported.",
   how_3_title: "Start your day in it",
   how_3_body: "Open it tomorrow morning and the schedule is already waiting for you.",
+  trust: {
+    eyebrow: "Where your records live",
+    title: "Patient data you can account for.",
+    body:
+      "You are being asked to move medical records into someone else's software, so here is exactly what happens to them. No vague reassurance, just what the system actually does.",
+    points: [
+      {
+        icon: "server",
+        title: "Stored inside the EU",
+        body: "Encrypted in transit and at rest, on infrastructure that never leaves the European Union. Backed up daily.",
+      },
+      {
+        icon: "lock",
+        title: "One practice never sees another",
+        body: "Every request is scoped to your practice on the server, not in the browser. There is no shared view to leak through.",
+      },
+      {
+        icon: "eye",
+        title: "We do not read your records",
+        body: "No advertising, no selling data, and nothing used to train models. We look only when you ask us to help with a specific problem.",
+      },
+      {
+        icon: "file",
+        title: "You can take it with you",
+        body: "Export a patient's history as a PDF whenever you like, or ask for the whole practice. Cancel and your data leaves with you.",
+      },
+    ],
+    link: "Read how we handle GDPR",
+  },
   salesman: {
     eyebrow: "Talk to a person",
     title: "You will be speaking with Ioannis.",
@@ -85,6 +114,7 @@ export const landingEn: LandingCopy = {
   contact_size_options: ["Just me", "2 to 5", "6 to 15", "More than 15"],
   contact_message: "Anything you'd like us to know",
   contact_submit: "Request a demo",
+  contact_sending: "Sending…",
   contact_note: "We usually reply the same working day.",
   contact_sent_title: "Thanks, that's with us",
   contact_sent_body:
@@ -193,6 +223,35 @@ export const landingEl: LandingCopy = {
   how_2_body: "Παίρνετε τη διεύθυνσή σας, την ομάδα σας περασμένη και τους ασθενείς σας εισαγμένους.",
   how_3_title: "Ξεκινάτε τη μέρα μέσα του",
   how_3_body: "Το ανοίγετε αύριο το πρωί και το πρόγραμμα σας περιμένει ήδη.",
+  trust: {
+    eyebrow: "Πού βρίσκονται τα αρχεία σας",
+    title: "Δεδομένα ασθενών για τα οποία μπορείτε να λογοδοτήσετε.",
+    body:
+      "Σας ζητάμε να μεταφέρετε ιατρικά αρχεία σε λογισμικό τρίτου, οπότε να τι ακριβώς γίνεται με αυτά. Χωρίς αόριστες διαβεβαιώσεις, μόνο τι κάνει πραγματικά το σύστημα.",
+    points: [
+      {
+        icon: "server",
+        title: "Αποθήκευση εντός ΕΕ",
+        body: "Κρυπτογραφημένα κατά τη μεταφορά και σε ηρεμία, σε υποδομή που δεν φεύγει ποτέ από την Ευρωπαϊκή Ένωση. Ημερήσια αντίγραφα ασφαλείας.",
+      },
+      {
+        icon: "lock",
+        title: "Κανένα ιατρείο δεν βλέπει άλλο",
+        body: "Κάθε αίτημα περιορίζεται στο ιατρείο σας στον διακομιστή, όχι στον browser. Δεν υπάρχει κοινή προβολή από την οποία να διαρρεύσει κάτι.",
+      },
+      {
+        icon: "eye",
+        title: "Δεν διαβάζουμε τα αρχεία σας",
+        body: "Χωρίς διαφημίσεις, χωρίς πώληση δεδομένων, χωρίς εκπαίδευση μοντέλων. Κοιτάμε μόνο όταν μας ζητήσετε βοήθεια για συγκεκριμένο θέμα.",
+      },
+      {
+        icon: "file",
+        title: "Τα παίρνετε μαζί σας",
+        body: "Εξαγωγή ιστορικού ασθενή σε PDF όποτε θέλετε, ή ολόκληρου του ιατρείου κατόπιν αιτήματος. Αν φύγετε, φεύγουν μαζί σας.",
+      },
+    ],
+    link: "Διαβάστε πώς χειριζόμαστε το GDPR",
+  },
   salesman: {
     eyebrow: "Μιλήστε με άνθρωπο",
     title: "Θα μιλήσετε με τον Ιωάννη.",
@@ -219,6 +278,7 @@ export const landingEl: LandingCopy = {
   contact_size_options: ["Μόνο εγώ", "2 έως 5", "6 έως 15", "Πάνω από 15"],
   contact_message: "Οτιδήποτε θέλετε να ξέρουμε",
   contact_submit: "Ζητήστε επίδειξη",
+  contact_sending: "Αποστολή…",
   contact_note: "Απαντάμε συνήθως την ίδια εργάσιμη μέρα.",
   contact_sent_title: "Ευχαριστούμε, το λάβαμε",
   contact_sent_body:
