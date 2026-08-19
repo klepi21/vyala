@@ -63,12 +63,11 @@ export const landingEn: LandingCopy = {
     eyebrow: "Talk to a person",
     title: "You will be speaking with Ioannis.",
     body:
-      "No call centre and no chatbot. Ioannis handles every practice that comes to Vyala, from the first conversation through to the day your patients are imported and your team is set up. He trained as a lawyer and runs a family restaurant, so he understands both the paperwork side of a regulated business and what it is like to keep one running while the phone rings.",
+      "No call centre and no chatbot. Ioannis handles every practice that comes to Vyala, from the first conversation through to the day your patients are imported and your team is set up. He trained as a lawyer, so the paperwork side of a regulated business is familiar ground, and he has run one himself, so he knows what it is like to keep things moving while the phone rings.",
     name: "Ioannis Gioltsidis",
     role: "Practice partnerships, Greece and Cyprus",
     credentials: [
       { icon: "scale", text: "Lawyer" },
-      { icon: "fork", text: "Manager at geusicleous62_restaurant" },
       { icon: "pin", text: "Born in Greece, living in Cyprus" },
       { icon: "cap", text: "LLB, MBA, European University Cyprus" },
     ],
@@ -198,12 +197,11 @@ export const landingEl: LandingCopy = {
     eyebrow: "Μιλήστε με άνθρωπο",
     title: "Θα μιλήσετε με τον Ιωάννη.",
     body:
-      "Χωρίς τηλεφωνικό κέντρο και χωρίς chatbot. Ο Ιωάννης αναλαμβάνει κάθε ιατρείο που έρχεται στο Vyala, από την πρώτη κουβέντα μέχρι τη μέρα που θα έχουν περαστεί οι ασθενείς σας και θα είναι έτοιμη η ομάδα σας. Έχει σπουδάσει νομικά και διευθύνει οικογενειακό εστιατόριο, οπότε καταλαβαίνει και τη γραφειοκρατία μιας ρυθμιζόμενης δουλειάς και το πώς είναι να την κρατάς όρθια ενώ χτυπάει το τηλέφωνο.",
+      "Χωρίς τηλεφωνικό κέντρο και χωρίς chatbot. Ο Ιωάννης αναλαμβάνει κάθε ιατρείο που έρχεται στο Vyala, από την πρώτη κουβέντα μέχρι τη μέρα που θα έχουν περαστεί οι ασθενείς σας και θα είναι έτοιμη η ομάδα σας. Έχει σπουδάσει νομικά, οπότε η γραφειοκρατία μιας ρυθμιζόμενης δουλειάς του είναι οικεία, και έχει διοικήσει και ο ίδιος επιχείρηση, οπότε ξέρει πώς είναι να κρατάς τα πράγματα σε κίνηση ενώ χτυπάει το τηλέφωνο.",
     name: "Ιωάννης Γιολτσίδης",
     role: "Συνεργασίες ιατρείων, Ελλάδα και Κύπρος",
     credentials: [
       { icon: "scale", text: "Δικηγόρος" },
-      { icon: "fork", text: "Manager στο geusicleous62_restaurant" },
       { icon: "pin", text: "Γεννημένος στην Ελλάδα, ζει στην Κύπρο" },
       { icon: "cap", text: "LLB, MBA, European University Cyprus" },
     ],

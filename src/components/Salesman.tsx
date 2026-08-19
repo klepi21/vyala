@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, GraduationCap, MapPin, Scale, UtensilsCrossed } from "lucide-react";
+import { ArrowRight, GraduationCap, MapPin, Scale } from "lucide-react";
 
 export interface SalesmanCopy {
   eyebrow: string;
@@ -7,14 +7,13 @@ export interface SalesmanCopy {
   body: string;
   name: string;
   role: string;
-  credentials: { icon: "scale" | "fork" | "pin" | "cap"; text: string }[];
+  credentials: { icon: "scale" | "pin" | "cap"; text: string }[];
   cta: string;
   note: string;
 }
 
 const ICONS = {
   scale: Scale,
-  fork: UtensilsCrossed,
   pin: MapPin,
   cap: GraduationCap,
 };
