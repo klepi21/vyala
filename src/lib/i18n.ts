@@ -8,6 +8,7 @@ const en = {
   nav_payments: "Payments",
   nav_invoices: "Invoices",
   nav_team: "Team & Settings",
+  nav_team_short: "Team",
   sign_out: "Sign out",
 
   // Dashboard
@@ -277,6 +278,7 @@ const el: typeof en = {
   nav_payments: "Πληρωμές",
   nav_invoices: "Τιμολόγια",
   nav_team: "Ομάδα & Ρυθμίσεις",
+  nav_team_short: "Ομάδα",
   sign_out: "Αποσύνδεση",
 
   dash_today: "Σημερινά ραντεβού",

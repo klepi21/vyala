@@ -52,7 +52,7 @@ export function WeekCalendar({
     // Seven columns need about 560px to stay legible, so on a phone the strip
     // scrolls sideways instead of crushing each day to 40px.
     <div className="-mx-1 overflow-x-auto px-1 pb-1">
-      <div className="grid min-w-[560px] grid-cols-7 gap-px overflow-hidden rounded-xl bg-black/[.06]">
+      <div className="grid min-w-[680px] grid-cols-7 gap-px overflow-hidden rounded-xl bg-black/[.06]">
       {days.map((iso, index) => {
         const list = (byDay.get(iso) ?? []).filter((a) => a.status !== "cancelled");
         const isToday = iso === todayKey;
@@ -63,17 +63,17 @@ export function WeekCalendar({
           <Link
             key={iso}
             href={`${basePath}?date=${iso}`}
-            className={`group flex min-h-32 flex-col gap-1 p-2 transition ${
+            className={`group flex min-h-40 flex-col gap-1.5 p-3 transition ${
               weekend ? "bg-mist/70" : "bg-white"
             } hover:bg-brand-50/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600`}
           >
             <div className="mb-0.5 flex items-baseline justify-between">
-              <span className="text-[10px] font-medium uppercase tracking-wide text-muted">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted">
                 {dayName.format(noon)}
               </span>
               <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold tabular-nums ${
-                  isToday ? "bg-brand-600 text-white" : "text-ink/70"
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-[15px] font-bold tabular-nums ${
+                  isToday ? "bg-brand-600 text-white" : "text-ink/80"
                 }`}
               >
                 {dayNum.format(noon)}
@@ -81,15 +81,15 @@ export function WeekCalendar({
             </div>
 
             {list.length === 0 ? (
-              <span className="mt-1 text-[10px] text-muted">{isToday ? todayLabel : emptyLabel}</span>
+              <span className="mt-1.5 text-xs text-muted">{isToday ? todayLabel : emptyLabel}</span>
             ) : (
               <>
                 {list.slice(0, 3).map((a) => (
                   <span
                     key={a.id}
-                    className="flex items-center gap-1 truncate rounded-md bg-black/[.03] px-1.5 py-1 text-[10px] leading-tight"
+                    className="flex items-center gap-1.5 truncate rounded-lg bg-black/[.04] px-2 py-1.5 text-xs leading-tight"
                   >
-                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot[a.status]}`} />
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${statusDot[a.status]}`} />
                     <span className="shrink-0 font-medium tabular-nums">
                       {timeFmt.format(new Date(a.startsAt))}
                     </span>
@@ -97,7 +97,7 @@ export function WeekCalendar({
                   </span>
                 ))}
                 {list.length > 3 && (
-                  <span className="px-1 text-[10px] font-medium text-brand-700">
+                  <span className="px-1 text-xs font-semibold text-brand-700">
                     +{list.length - 3}
                   </span>
                 )}

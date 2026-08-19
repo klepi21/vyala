@@ -12,6 +12,15 @@ export function money(value: number, locale: Locale): string {
   return new Intl.NumberFormat(tag(locale), { style: "currency", currency: "EUR" }).format(value);
 }
 
+/** Money without the cents, for glance-sized figures where they add nothing. */
+export function moneyRound(value: number, locale: Locale): string {
+  return new Intl.NumberFormat(tag(locale), {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
 export function date(value: string | Date, locale: Locale): string {
   return new Intl.DateTimeFormat(tag(locale), {
     dateStyle: "medium",

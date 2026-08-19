@@ -212,8 +212,8 @@ export function PageTitle({
   return (
     <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
-        {description && <p className="mt-1 text-sm text-muted">{description}</p>}
+        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        {description && <p className="mt-1.5 text-[15px] text-muted">{description}</p>}
       </div>
       {action}
     </div>
@@ -237,7 +237,7 @@ export function Tabs({
             key={it.key}
             href={it.href}
             aria-current={active ? "page" : undefined}
-            className={`flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
+            className={`flex min-h-12 items-center gap-2 whitespace-nowrap rounded-lg px-5 py-2 text-[15px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
               active ? "bg-white text-ink shadow-sm" : "text-ink/60 hover:text-ink"
             }`}
           >
