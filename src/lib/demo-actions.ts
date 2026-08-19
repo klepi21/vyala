@@ -108,6 +108,54 @@ export async function demoCreateAppointment(
   return formOk;
 }
 
+/** Move or amend a booking in the showroom. */
+export async function demoUpdateAppointment(
+  appointmentId: string,
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const t = await dict();
+  if (!isValidId(appointmentId)) return formError(t.err_unknown_appointment);
+
+  const date = str(formData, "date");
+  const time = str(formData, "time");
+  if (!date || !time) return formError(t.err_date_time);
+  const startsAt = fromClinicLocal(date, time);
+  if (Number.isNaN(startsAt.getTime())) return formError(t.err_date_time);
+
+  const patientId = str(formData, "patient_id");
+  const { d, clinicId } = await scoped(patientId || undefined);
+
+  const rawDoctor = str(formData, "doctor_id");
+  const doctor =
+    rawDoctor && isValidId(rawDoctor)
+      ? await d.collection("members").findOne({ _id: oid(rawDoctor), clinicId }, { projection: { _id: 1 } })
+      : null;
+
+  const duration = parseInt(str(formData, "duration_min") || "30", 10) || 30;
+  const status = str(formData, "status");
+
+  const result = await d.collection("appointments").updateOne(
+    { _id: oid(appointmentId), clinicId },
+    {
+      $set: {
+        ...(patientId ? { patientId: oid(patientId) } : {}),
+        doctorId: doctor ? doctor._id : null,
+        startsAt: startsAt.toISOString(),
+        durationMin: Math.min(480, Math.max(5, duration)),
+        reason: opt(formData, "reason"),
+        ...(["scheduled", "completed", "cancelled", "no_show"].includes(status) ? { status } : {}),
+        updatedAt: now(),
+      },
+    }
+  );
+  if (result.matchedCount === 0) return formError(t.err_unknown_appointment);
+
+  revalidatePath("/demo/appointments");
+  revalidatePath("/demo");
+  redirect(`/demo/appointments?date=${date}`);
+}
+
 export async function demoSetAppointmentStatus(appointmentId: string, status: string) {
   if (!isValidId(appointmentId)) return;
   if (!["scheduled", "completed", "cancelled", "no_show"].includes(status)) return;

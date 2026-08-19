@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Pencil, X } from "lucide-react";
 import { demoContext } from "@/lib/demo";
 import { doctorOptions, listAppointments, patientOptions } from "@/lib/queries";
 import {
@@ -90,6 +90,14 @@ export default async function DemoAppointments({
                       </p>
                     </div>
                     <Badge tone={tone[a.status]}>{label[a.status]}</Badge>
+                    <Link
+                      href={`/demo/appointments/${a.id}`}
+                      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-mist hover:text-ink"
+                      title={t.appt_edit}
+                      aria-label={t.appt_edit}
+                    >
+                      <Pencil size={16} />
+                    </Link>
                     {a.status === "scheduled" && (
                       <div className="flex gap-1">
                         <form action={complete}>
